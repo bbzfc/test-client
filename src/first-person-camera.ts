@@ -2,7 +2,11 @@ import { Subscription } from 'rxjs';
 import * as THREE from 'three';
 
 import { Application } from './application';
-import { AppEventBus, AppEventTypes, AppEventTypeAnimationFrame } from './app-event-bus';
+import {
+  AppEventBus,
+  AppEventTypeRendererGeometryUpdate,
+  AppEventTypeAnimationFrame
+} from './app-event-bus';
 import { IFirstPersonCameraOptions } from './interfaces/first-person-camera.interfaces';
 
 function contextmenu(event: Event) {
@@ -143,14 +147,15 @@ class FirstPersonCamera {
   }
 
   private handleResize(
-    offsetWidth: number, offsetHeight: number,
+    // offsetWidth: number, offsetHeight: number,
+    appWidth: number, appHeight: number,
     offsetLeft: number, offsetTop: number
   ) {
-    this._camera.aspect = offsetWidth / offsetHeight;
+    this._camera.aspect = appWidth / appHeight;
     this._camera.updateProjectionMatrix();
 
-    this.renderElCenterX = offsetLeft + offsetWidth * 0.5;
-    this.renderElCenterY = offsetTop + offsetHeight * 0.5;
+    this.renderElCenterX = offsetLeft + appWidth * 0.5;
+    this.renderElCenterY = offsetTop + appHeight * 0.5;
   }
 
   public onMouseDown(event: MouseEvent): void {
@@ -236,13 +241,23 @@ class FirstPersonCamera {
     //   }
     // });
 
-    const subscription = this.eventBus.on(
+    let subscription = this.eventBus.on(
       AppEventTypeAnimationFrame,
       (event: AppEventTypeAnimationFrame) => {
         this.update(event.payload.delta);
       }
     );
+    this.eventSubscriptions.push(subscription);
 
+    subscription = this.eventBus.on(
+      AppEventTypeRendererGeometryUpdate,
+      (event: AppEventTypeRendererGeometryUpdate) => {
+        this.handleResize(
+          event.payload.appWidth, event.payload.appHeight,
+          event.payload.offsetLeft, event.payload.offsetTop
+        );
+      }
+    );
     this.eventSubscriptions.push(subscription);
   }
 

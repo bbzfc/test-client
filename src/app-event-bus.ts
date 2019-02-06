@@ -62,6 +62,22 @@ export class AppEventTypeWindowResize extends AppEvent {
 
 /* -------------------- */
 
+export interface IAppEventTypeRendererGeometryUpdatePayload {
+  appWidth: number;
+  appHeight: number;
+  offsetLeft: number;
+  offsetTop: number;
+}
+
+export class AppEventTypeRendererGeometryUpdate extends
+  AppEventWithPayload<IAppEventTypeRendererGeometryUpdatePayload> {
+
+  static readonly type = 'AppEventTypeRendererGeometryUpdate';
+  public readonly type = AppEventTypeRendererGeometryUpdate.type;
+}
+
+/* -------------------- */
+
 export type AppEventTypes =
   AppEventTypeA |
   AppEventTypeB |

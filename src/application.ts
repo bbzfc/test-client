@@ -5,7 +5,8 @@ import {
   AppEventBus,
   AppEventTypes,
   AppEventTypeWindowResize,
-  AppEventTypeAnimationFrame
+  AppEventTypeAnimationFrame,
+  AppEventTypeRendererGeometryUpdate
 } from './app-event-bus';
 import { IApplicationOptions, IApplicationContainer } from './interfaces/application.interfaces';
 
@@ -143,11 +144,12 @@ class Application {
   private initEventSubscriptions(): void {
     this.eventSubscriptions = [];
 
-    const subscription = this.eventBus.subscribe((event: AppEventTypes) => {
-      if (event instanceof AppEventTypeWindowResize) {
+    const subscription = this.eventBus.on(
+      AppEventTypeWindowResize,
+      () => {
         this.updateRendererSize();
       }
-    });
+    );
     this.eventSubscriptions.push(subscription);
   }
 
@@ -161,6 +163,13 @@ class Application {
     }
 
     this.renderer.setSize(appWidth, appHeight);
+
+    this.eventBus.emit(new AppEventTypeRendererGeometryUpdate(
+      { appWidth, appHeight,
+        offsetLeft: this.appContainerOffsetLeft,
+        offsetTop: this.appContainerOffsetTop
+      }
+    ));
   }
 
   private get appContainerHeight(): number {
@@ -185,6 +194,30 @@ class Application {
     }
 
     return (this.appContainer as HTMLElement).clientWidth;
+  }
+
+  private get appContainerOffsetLeft(): number {
+    if (!this.appContainer) {
+      return 0;
+    }
+
+    if (this.appContainer === document) {
+      return 0;
+    }
+
+    return (this.appContainer as HTMLElement).offsetLeft;
+  }
+
+  private get appContainerOffsetTop(): number {
+    if (!this.appContainer) {
+      return 0;
+    }
+
+    if (this.appContainer === document) {
+      return 0;
+    }
+
+    return (this.appContainer as HTMLElement).offsetTop;
   }
 
   private animate(): void {
