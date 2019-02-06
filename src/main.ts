@@ -6,6 +6,7 @@ import { WindowResizer } from './window-resizer';
 import { Application } from './application';
 import { Controls } from './controls';
 import { Game } from './game';
+import { FirstPersonCamera } from './first-person-camera';
 
 import * as THREE from 'three';
 
@@ -21,6 +22,7 @@ interface IAppModule {
   app?: Application;
   controls?: Controls;
   game?: Game;
+  fpCamera?: FirstPersonCamera;
 }
 
 function x() {
@@ -29,49 +31,61 @@ function x() {
   module.eventBus = new AppEventBus();
   module.windowResizer = new WindowResizer(module.eventBus);
 
-  module.app = new Application(module.eventBus, {
-    camera: {
-      x: -20,
-      y: 10,
-      fieldOfView: 45
-    },
-    container: document.getElementById('app-container'),
-    threeJsRendererCanvasClass: 'three-js-renderer-canvas'
-  });
+  module.app = new Application(
+    module.eventBus,
+    {
+      container: document.getElementById('app-container'),
+      threeJsRendererCanvasClass: 'three-js-renderer-canvas'
+    }
+  );
+
+  module.controls = new Controls(module.eventBus);
+  module.game = new Game(module.eventBus, module.app);
+  module.fpCamera = new FirstPersonCamera(
+    module.eventBus,
+    {
+      lookSpeed: 0.1,
+      movementSpeed: 1,
+      camera: {
+        x: -20,
+        y: 10,
+        fieldOfView: 45
+      }
+    }
+  );
+
+  module.app.camera = module.fpCamera.camera;
 
   module.app.rendererReady().then(() => {
-    module.controls = new Controls(module.app, module.eventBus);
-    module.game = new Game(module.eventBus, module.app);
-
     module.app.start();
-
-    // window.setTimeout(() => {
-    //   console.log('Will attempt to destroy all...');
-
-    //   module.app.pause();
-
-    //   module.game.destroy();
-    //   module.controls.destroy();
-    //   module.app.destroy();
-    //   module.windowResizer.destroy();
-    //   module.eventBus.destroy();
-
-    //   delete module.game;
-    //   module.game = null;
-
-    //   delete module.controls;
-    //   module.controls = null;
-
-    //   delete module.app;
-    //   module.app = null;
-
-    //   delete module.windowResizer;
-    //   module.windowResizer = null;
-
-    //   delete module.eventBus;
-    //   module.eventBus = null;
-    // }, 7 * 1000);
   });
+
+  // window.setTimeout(() => {
+  //   console.log('Will attempt to destroy all...');
+
+  //   module.app.pause();
+
+  //   module.game.destroy();
+  //   module.controls.destroy();
+  //   module.app.destroy();
+  //   module.windowResizer.destroy();
+  //   module.eventBus.destroy();
+
+  //   delete module.game;
+  //   module.game = null;
+
+  //   delete module.controls;
+  //   module.controls = null;
+
+  //   delete module.app;
+  //   module.app = null;
+
+  //   delete module.windowResizer;
+  //   module.windowResizer = null;
+
+  //   delete module.eventBus;
+  //   module.eventBus = null;
+  // }, 7 * 1000);
 }
 
 x();

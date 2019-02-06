@@ -1,17 +1,15 @@
-import { Application } from './application';
-
 import { AppEventBus } from './app-event-bus';
-import { FirstPersonControlsModule } from './first-person-controls';
+// import { FirstPersonControlsModule } from './first-person-controls';
 
 class Controls {
-  private fpControls: FirstPersonControlsModule = null;
+  // private fpControls: FirstPersonControlsModule = null;
 
-  constructor(app: Application, eventBus: AppEventBus) {
-    this.fpControls = new FirstPersonControlsModule(app, eventBus);
+  constructor(eventBus: AppEventBus) {
+    // this.fpControls = new FirstPersonControlsModule(app, eventBus);
     // this.fpControls = new FirstPersonControlsModule(app.camera, app.renderer.domElement);
 
-    this.fpControls.lookSpeed = 0.1;
-    this.fpControls.movementSpeed = 1;
+    // this.fpControls.lookSpeed = 0.1;
+    // this.fpControls.movementSpeed = 1;
   }
 
   // public update(delta: number): void {
@@ -19,10 +17,10 @@ class Controls {
   // }
 
   public destroy(): void {
-    this.fpControls.destroy();
+    // this.fpControls.destroy();
 
-    delete this.fpControls;
-    this.fpControls = null;
+    // delete this.fpControls;
+    // this.fpControls = null;
   }
 }
 

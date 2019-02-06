@@ -42,7 +42,13 @@ export class AppEventTypeB extends AppEventWithPayload<IAppEventTypeBPayload> {
 
 /* -------------------- */
 
-export class AppEventTypeAnimationFrame extends AppEvent {
+export interface IAppEventTypeAnimationFramePayload {
+  delta: number;
+}
+
+export class AppEventTypeAnimationFrame extends
+  AppEventWithPayload<IAppEventTypeAnimationFramePayload> {
+
   static readonly type = 'AppEventTypeAnimationFrame';
   public readonly type = AppEventTypeAnimationFrame.type;
 }

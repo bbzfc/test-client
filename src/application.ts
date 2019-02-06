@@ -12,7 +12,7 @@ import { IApplicationOptions, IApplicationContainer } from './interfaces/applica
 class Application {
   public clock: Clock = null;
   public scene: Scene = null;
-  public camera: PerspectiveCamera = null;
+  private _camera: PerspectiveCamera = null;
   public renderer: WebGLRenderer = null;
 
   private eventBus: AppEventBus;
@@ -58,6 +58,10 @@ class Application {
     return this.renderer.domElement;
   }
 
+  public set camera(newCamera: PerspectiveCamera) {
+    this._camera = newCamera;
+  }
+
   public destroy(): void {
     if (this.isInitialized !== true || this.isDestroyed === true) {
       return;
@@ -72,11 +76,11 @@ class Application {
 
     delete this.clock;
     delete this.scene;
-    delete this.camera;
+    delete this._camera;
 
     this.clock = null;
     this.scene = null;
-    this.camera = null;
+    this._camera = null;
 
     if (this.appContainer === document) {
       document.body.removeChild(this.renderer.domElement);
@@ -122,31 +126,6 @@ class Application {
     this.clock = new Clock();
     this.scene = new Scene();
 
-    let cameraFieldOfView = 45;
-    if (options.camera && typeof options.camera.fieldOfView === 'number') {
-      if (options.camera.fieldOfView >= 1 && options.camera.fieldOfView <= 359) {
-        cameraFieldOfView = options.camera.fieldOfView;
-      }
-    }
-
-    this.camera = new PerspectiveCamera(cameraFieldOfView, 1);
-
-    if (options.camera) {
-      const propToMethod = {
-        x: 'translateX',
-        y: 'translateY',
-        z: 'translateZ'
-      };
-
-      ['x', 'y', 'z'].forEach((axis): void => {
-        if (typeof options.camera[axis] === 'number') {
-          this.camera[propToMethod[axis]](options.camera[axis]);
-        }
-      });
-    }
-
-    this.camera.up.set( 0, 0, 1 );
-
     this.renderer = new WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
 
@@ -181,9 +160,6 @@ class Application {
       appHeight = 1;
     }
 
-    this.camera.aspect = appWidth / appHeight;
-    this.camera.updateProjectionMatrix();
-
     this.renderer.setSize(appWidth, appHeight);
   }
 
@@ -217,7 +193,9 @@ class Application {
     }
 
     // debugger;
-    this.renderer.render(this.scene, this.camera);
+    if (this._camera) {
+      this.renderer.render(this.scene, this._camera);
+    }
 
     requestAnimationFrame((): void => {
       if (this.isDestroyed === true || this.animationPaused === true) {
@@ -225,7 +203,7 @@ class Application {
       }
 
       // debugger;
-      this.eventBus.emit(new AppEventTypeAnimationFrame());
+      this.eventBus.emit(new AppEventTypeAnimationFrame({ delta: this.clock.getDelta() }));
 
       this.animate();
     });
