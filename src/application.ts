@@ -1,18 +1,19 @@
 import { Clock, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { Subscription } from 'rxjs';
+
+import { IApplicationOptions, IApplicationContainer } from './interfaces/application.interfaces';
+
 import { domReady } from './utils';
 import {
   AppEventBus,
-  AppEventTypes,
   AppEventTypeWindowResize,
   AppEventTypeAnimationFrame,
   AppEventTypeRendererGeometryUpdate
 } from './app-event-bus';
-import { IApplicationOptions, IApplicationContainer } from './interfaces/application.interfaces';
 
 class Application {
   public clock: Clock = null;
-  public scene: Scene = null;
+  private _scene: Scene = null;
   private _camera: PerspectiveCamera = null;
   public renderer: WebGLRenderer = null;
 
@@ -63,6 +64,10 @@ class Application {
     this._camera = newCamera;
   }
 
+  public set scene(newScene: Scene) {
+    this._scene = newScene;
+  }
+
   public destroy(): void {
     if (this.isInitialized !== true || this.isDestroyed === true) {
       return;
@@ -76,11 +81,11 @@ class Application {
     });
 
     delete this.clock;
-    delete this.scene;
+    delete this._scene;
     delete this._camera;
 
     this.clock = null;
-    this.scene = null;
+    this._scene = null;
     this._camera = null;
 
     if (this.appContainer === document) {
@@ -125,7 +130,6 @@ class Application {
 
   private initRenderer(options: IApplicationOptions): void {
     this.clock = new Clock();
-    this.scene = new Scene();
 
     this.renderer = new WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -225,17 +229,13 @@ class Application {
       return;
     }
 
-    // debugger;
-    if (this._camera) {
-      this.renderer.render(this.scene, this._camera);
-    }
+    this.renderer.render(this._scene, this._camera);
 
     requestAnimationFrame((): void => {
       if (this.isDestroyed === true || this.animationPaused === true) {
         return;
       }
 
-      // debugger;
       this.eventBus.emit(new AppEventTypeAnimationFrame({ delta: this.clock.getDelta() }));
 
       this.animate();

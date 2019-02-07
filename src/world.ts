@@ -1,28 +1,21 @@
 import { Subscription } from 'rxjs';
-
-import { AppEventBus, AppEventTypes, AppEventTypeAnimationFrame } from './app-event-bus';
-import { Application } from './application';
-// import { Controls } from './controls';
-
 import {
   BoxGeometry,
-  Clock,
   DoubleSide,
   HemisphereLight,
   Mesh,
-  Material,
   MeshBasicMaterial,
-  PerspectiveCamera,
   PlaneBufferGeometry,
   Scene,
-  WebGLRenderer,
   GLTFLoader,
   DirectionalLight,
   Object3D
 } from 'three';
 
-class Game {
-  private app: Application;
+import { AppEventBus, AppEventTypes, AppEventTypeAnimationFrame } from './app-event-bus';
+
+class World {
+  private _scene: Scene;
 
   private eventBus: AppEventBus;
   private eventSubscriptions: Subscription[];
@@ -34,17 +27,18 @@ class Game {
   private isInitialized: boolean;
   private isDestroyed: boolean;
 
-  constructor(eventBus: AppEventBus, app: Application /*, controls: Controls */) {
+  constructor(eventBus: AppEventBus) {
     this.eventBus = eventBus;
-    this.app = app;
-    // this.controls = controls;
 
-    this.initGameObjects();
+    this.initWorldObjects();
     this.initEventSubscriptions();
-    // this.animate();
 
     this.isInitialized = true;
     this.isDestroyed = false;
+  }
+
+  public get scene(): Scene {
+    return this._scene;
   }
 
   public destroy(): void {
@@ -62,7 +56,7 @@ class Game {
     this.eventSubscriptions = null;
 
     for (let i = this.objects.length - 1; i >= 0; i -= 1) {
-      this.app.scene.remove(this.objects[i]);
+      this._scene.remove(this.objects[i]);
       delete this.objects[i];
       this.objects[i] = null;
     }
@@ -86,7 +80,9 @@ class Game {
     this.materials = null;
   }
 
-  private initGameObjects(): void {
+  private initWorldObjects(): void {
+    this._scene = new Scene();
+
     this.geometries = [];
     this.materials = [];
     this.objects = [];
@@ -133,9 +129,10 @@ class Game {
     const light = new DirectionalLight(0xffffff, 1);
     light.position.x = -100;
     light.position.y = 150;
-    this.app.scene.add(light);
+    this._scene.add(light);
 
     // model
+    // const loader: GLTFLoader = new (window as I3Window).THREE.GLTFLoader();
     const loader = new GLTFLoader();
 
     loader.load('assets/tank2-v.0.1.gltf', (gltf) => {
@@ -143,7 +140,7 @@ class Game {
       let gltfLamp = null;
 
       gltf.scene.traverse((child) => {
-        console.log(child);
+        // console.log(child);
 
         if (child.name.toLowerCase() === 'camera') {
           gltfCamera = child;
@@ -165,7 +162,7 @@ class Game {
       gltf.scene.translateX(-2);
       gltf.scene.translateY(-3);
 
-      this.app.scene.add(gltf.scene);
+      this._scene.add(gltf.scene);
 
       this.objects.push(gltf.scene);
 
@@ -176,7 +173,7 @@ class Game {
     // ----------------------------------
 
     this.objects.forEach((object) => {
-      this.app.scene.add(object);
+      this._scene.add(object);
     });
   }
 
@@ -185,22 +182,27 @@ class Game {
 
     const subscription = this.eventBus.subscribe((event: AppEventTypes) => {
       if (event instanceof AppEventTypeAnimationFrame) {
-        this.updateGame();
+        // debugger;
+
+        this.updateWorld();
       }
     });
     this.eventSubscriptions.push(subscription);
   }
 
-  private updateGame(): void {
+  private updateWorld(): void {
     // const delta = this.app.clock.getDelta();
     // this.controls.update(delta);
 
     // debugger;
     this.objects[0].rotation.x += 0.01;
-    this.objects[3].position.x -= 0.05;
+
+    if (this.objects[3]) {
+      this.objects[3].position.x -= 0.05;
+    }
   }
 }
 
 export {
-  Game
+  World
 };

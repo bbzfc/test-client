@@ -5,8 +5,13 @@ interface IApplicationOptionsCamera {
   z?: number;
 }
 
-export interface IFirstPersonCameraOptions {
+interface IFirstPersonCameraOptions {
   lookSpeed?: number;
   movementSpeed?: number;
   camera?: IApplicationOptionsCamera;
 }
+
+export {
+  IApplicationOptionsCamera,
+  IFirstPersonCameraOptions
+};

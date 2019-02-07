@@ -1,5 +1,4 @@
-import { AppEventBus } from './app-event-bus';
-import { AppEventTypeWindowResize } from './app-event-bus';
+import { AppEventBus, AppEventTypeWindowResize } from './app-event-bus';
 
 class WindowResizer {
   private eventBus: AppEventBus;
@@ -28,6 +27,13 @@ class WindowResizer {
     this.isDestroyed = true;
 
     window.removeEventListener('resize', this.resizeListener);
+
+    delete this.resizeListener;
+    this.resizeListener = null;
+  }
+
+  public emit(): void {
+    this.eventBus.emit(new AppEventTypeWindowResize());
   }
 }
 

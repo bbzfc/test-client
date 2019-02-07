@@ -1,7 +1,12 @@
 import { Subscription } from 'rxjs';
-import * as THREE from 'three';
 
-import { Application } from './application';
+import {
+  PerspectiveCamera,
+  Vector3
+} from 'three';
+
+import { Math as TMath } from 'three';
+
 import {
   AppEventBus,
   AppEventTypeRendererGeometryUpdate,
@@ -43,8 +48,8 @@ class FirstPersonCamera {
   private eventBus: AppEventBus;
   private eventSubscriptions: Subscription[];
 
-  private _camera: THREE.PerspectiveCamera;
-  private targetPosition: THREE.Vector3;
+  private _camera: PerspectiveCamera;
+  private targetPosition: Vector3;
 
   private isInitialized: boolean;
   private isDestroyed: boolean;
@@ -62,7 +67,7 @@ class FirstPersonCamera {
       }
     }
 
-    this._camera = new THREE.PerspectiveCamera(cameraFieldOfView, 1);
+    this._camera = new PerspectiveCamera(cameraFieldOfView, 1);
 
     if (options.camera) {
       const propToMethod = {
@@ -82,7 +87,7 @@ class FirstPersonCamera {
 
     // this.domElement = app.canvasEl;
 
-    this.targetPosition = new THREE.Vector3(0, 0, 0);
+    this.targetPosition = new Vector3(0, 0, 0);
 
     if (typeof options.movementSpeed === 'number') {
       this.movementSpeed = options.movementSpeed;
@@ -142,7 +147,7 @@ class FirstPersonCamera {
     this.isDestroyed = false;
   }
 
-  public get camera(): THREE.PerspectiveCamera {
+  public get camera(): PerspectiveCamera {
     return this._camera;
   }
 
@@ -287,8 +292,8 @@ class FirstPersonCamera {
     this.lon += this.mouseY * actualLookSpeed;
 
     this.lat = Math.max(-85, Math.min(85, this.lat));
-    this.phi = THREE.Math.degToRad(90 - this.lat);
-    this.theta = THREE.Math.degToRad(this.lon);
+    this.phi = TMath.degToRad(90 - this.lat);
+    this.theta = TMath.degToRad(this.lon);
 
     const position = this._camera.position;
 

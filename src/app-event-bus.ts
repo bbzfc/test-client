@@ -1,6 +1,5 @@
+import { Subject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Subject } from 'rxjs';
-import { Subscription } from 'rxjs';
 
 // ----------------------------------------------------------------------------------- //
 // ----------------------------------------------------------------------------------- //
