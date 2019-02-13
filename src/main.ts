@@ -1,5 +1,9 @@
 import './styles/main.scss';
-// import './models/gltf/tank2/tank2-v.0.1.gltf';
+import './models/gltf/tank2/tank2.gltf';
+import './models/gltf/tank2/tank2.bin';
+import './models/gltf/tank2/texture1.png';
+import './models/gltf/tank2/texture2.png';
+import './models/gltf/tank2/texture3.png';
 
 import { ITWindow } from './interfaces/three-window.interfaces';
 import { IAppModule } from './interfaces/app-module.interfaces';

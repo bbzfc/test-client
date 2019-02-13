@@ -135,7 +135,13 @@ class World {
     // const loader: GLTFLoader = new (window as I3Window).THREE.GLTFLoader();
     const loader = new GLTFLoader();
 
-    loader.load('assets/tank2-v.0.1.glb', (gltf) => {
+    loader.load('assets/tank2.gltf', (gltf: any) => {
+
+      // this is not working
+      const number = Math.floor(Math.random() * 3) + 1;
+      gltf.parser.json.images[0].name = `texture${number}.png`;
+      gltf.parser.json.images[0].uri = `texture${number}.png`;
+
       let gltfCamera = null;
       let gltfLamp = null;
 
