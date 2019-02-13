@@ -135,7 +135,7 @@ class World {
     // const loader: GLTFLoader = new (window as I3Window).THREE.GLTFLoader();
     const loader = new GLTFLoader();
 
-    loader.load('assets/tank2-v.0.1.gltf', (gltf) => {
+    loader.load('assets/tank2-v.0.1.glb', (gltf) => {
       let gltfCamera = null;
       let gltfLamp = null;
 

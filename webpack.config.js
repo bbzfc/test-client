@@ -16,7 +16,7 @@ const config = {
   module: {
     rules: [
       {
-        test: /\.gltf$/,
+        test: /\.glb$/,
         loader: 'file-loader',
         options: {
           name: 'assets/[name].[ext]'
