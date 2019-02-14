@@ -14,7 +14,7 @@ import {
 } from './app-event-bus';
 import { IFirstPersonCameraOptions } from './interfaces/first-person-camera.interfaces';
 
-function contextmenu(event: Event) {
+function contextmenu(event: Event): void {
   event.preventDefault();
 }
 
@@ -30,11 +30,11 @@ class FirstPersonCamera {
   private lon: number;
   private phi: number;
   private theta: number;
-  private moveForward = false;
+  private moveForward: boolean = false;
   private moveBackward: boolean;
   private moveLeft: boolean;
   private moveRight: boolean;
-  private mouseDragOn: boolean;
+  // private mouseDragOn: boolean;
   private renderElCenterX: number;
   private renderElCenterY: number;
 
@@ -60,7 +60,7 @@ class FirstPersonCamera {
       options = {};
     }
 
-    let cameraFieldOfView = 45;
+    let cameraFieldOfView: number = 45;
     if (options.camera && typeof options.camera.fieldOfView === 'number') {
       if (options.camera.fieldOfView >= 1 && options.camera.fieldOfView <= 359) {
         cameraFieldOfView = options.camera.fieldOfView;
@@ -70,13 +70,13 @@ class FirstPersonCamera {
     this._camera = new PerspectiveCamera(cameraFieldOfView, 1);
 
     if (options.camera) {
-      const propToMethod = {
+      const propToMethod: { [key: string]: string } = {
         x: 'translateX',
         y: 'translateY',
         z: 'translateZ'
       };
 
-      ['x', 'y', 'z'].forEach((axis): void => {
+      ['x', 'y', 'z'].forEach((axis: string): void => {
         if (typeof options.camera[axis] === 'number') {
           this._camera[propToMethod[axis]](options.camera[axis]);
         }
@@ -114,7 +114,7 @@ class FirstPersonCamera {
     this.moveLeft = false;
     this.moveRight = false;
 
-    this.mouseDragOn = false;
+    // this.mouseDragOn = false;
 
     this.renderElCenterX = 0;
     this.renderElCenterY = 0;
@@ -155,7 +155,7 @@ class FirstPersonCamera {
     // offsetWidth: number, offsetHeight: number,
     appWidth: number, appHeight: number,
     offsetLeft: number, offsetTop: number
-  ) {
+  ): void {
     this._camera.aspect = appWidth / appHeight;
     this._camera.updateProjectionMatrix();
 
@@ -179,7 +179,7 @@ class FirstPersonCamera {
     //   }
     // }
 
-    this.mouseDragOn = true;
+    // this.mouseDragOn = true;
   }
 
   public onMouseUp(event: MouseEvent): void {
@@ -193,7 +193,7 @@ class FirstPersonCamera {
     //   }
     // }
 
-    this.mouseDragOn = false;
+    // this.mouseDragOn = false;
   }
 
   public onMouseMove(event: MouseEvent): void {
@@ -201,7 +201,7 @@ class FirstPersonCamera {
     this.mouseY = event.pageY - this.renderElCenterY;
   }
 
-  public onKeyDown(event: KeyboardEvent) {
+  public onKeyDown(event: KeyboardEvent): void {
     // event.preventDefault();
 
     switch (event.code) {
@@ -221,7 +221,7 @@ class FirstPersonCamera {
     }
   }
 
-  public onKeyUp(event: KeyboardEvent) {
+  public onKeyUp(event: KeyboardEvent): void {
     switch (event.code) {
       case 'ArrowUp': /*up*/
       case 'KeyW': /*W*/ this.moveForward = false; break;
@@ -246,7 +246,7 @@ class FirstPersonCamera {
     //   }
     // });
 
-    let subscription = this.eventBus.on(
+    let subscription: Subscription = this.eventBus.on(
       AppEventTypeAnimationFrame,
       (event: AppEventTypeAnimationFrame) => {
         this.update(event.payload.delta);
@@ -271,7 +271,7 @@ class FirstPersonCamera {
       return;
     }
 
-    const actualMoveSpeed = delta * this.movementSpeed;
+    const actualMoveSpeed: number = delta * this.movementSpeed;
 
     if (this.moveForward) {
       this._camera.translateX(-actualMoveSpeed);
@@ -287,7 +287,7 @@ class FirstPersonCamera {
       this._camera.translateY(actualMoveSpeed);
     }
 
-    const actualLookSpeed = delta * this.lookSpeed;
+    const actualLookSpeed: number = delta * this.lookSpeed;
 
     this.lon += this.mouseY * actualLookSpeed;
 
@@ -295,7 +295,7 @@ class FirstPersonCamera {
     this.phi = TMath.degToRad(90 - this.lat);
     this.theta = TMath.degToRad(this.lon);
 
-    const position = this._camera.position;
+    const position: Vector3 = this._camera.position;
 
     this.targetPosition.x = position.x + 100 * Math.sin(this.phi) * Math.cos(this.theta);
     this.targetPosition.y = position.y + 100 * Math.cos(this.phi);
@@ -304,7 +304,7 @@ class FirstPersonCamera {
     this._camera.lookAt(this.targetPosition);
   }
 
-  public destroy() {
+  public destroy(): void {
     if (this.isInitialized !== true || this.isDestroyed === true) {
       return;
     }

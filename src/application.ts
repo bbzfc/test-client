@@ -12,9 +12,9 @@ import {
 } from './app-event-bus';
 
 class Application {
-  public clock: Clock = null;
-  private _scene: Scene = null;
-  private _camera: PerspectiveCamera = null;
+  private clock: Clock = null;
+  private internalScene: Scene = null;
+  private internalCamera: PerspectiveCamera = null;
   public renderer: WebGLRenderer = null;
 
   private eventBus: AppEventBus;
@@ -34,7 +34,9 @@ class Application {
       options = {};
     }
 
-    this.rendererReadyP = new Promise((resolve): void => {
+    this.rendererReadyP = new Promise(
+      (resolve: (value?: void | PromiseLike<void>) => void
+    ): void => {
       domReady((): void => {
         this.initAppContainer(options);
         this.initRenderer(options);
@@ -61,11 +63,11 @@ class Application {
   }
 
   public set camera(newCamera: PerspectiveCamera) {
-    this._camera = newCamera;
+    this.internalCamera = newCamera;
   }
 
   public set scene(newScene: Scene) {
-    this._scene = newScene;
+    this.internalScene = newScene;
   }
 
   public destroy(): void {
@@ -74,19 +76,19 @@ class Application {
     }
     this.isDestroyed = true;
 
-    this.eventSubscriptions.forEach((subscription, idx) => {
+    this.eventSubscriptions.forEach((subscription: Subscription, idx: number) => {
       subscription.unsubscribe();
       delete this.eventSubscriptions[idx];
       this.eventSubscriptions[idx] = null;
     });
 
     delete this.clock;
-    delete this._scene;
-    delete this._camera;
+    delete this.internalScene;
+    delete this.internalCamera;
 
     this.clock = null;
-    this._scene = null;
-    this._camera = null;
+    this.internalScene = null;
+    this.internalCamera = null;
 
     if (this.appContainer === document) {
       document.body.removeChild(this.renderer.domElement);
@@ -148,7 +150,7 @@ class Application {
   private initEventSubscriptions(): void {
     this.eventSubscriptions = [];
 
-    const subscription = this.eventBus.on(
+    const subscription: Subscription = this.eventBus.on(
       AppEventTypeWindowResize,
       () => {
         this.updateRendererSize();
@@ -158,8 +160,8 @@ class Application {
   }
 
   private updateRendererSize(): void {
-    let appWidth = this.appContainerWidth;
-    let appHeight = this.appContainerHeight;
+    let appWidth: number = this.appContainerWidth;
+    let appHeight: number = this.appContainerHeight;
 
     if (appWidth === 0 || appHeight === 0) {
       appWidth = 1;
@@ -229,7 +231,7 @@ class Application {
       return;
     }
 
-    this.renderer.render(this._scene, this._camera);
+    this.renderer.render(this.internalScene, this.internalCamera);
 
     requestAnimationFrame((): void => {
       if (this.isDestroyed === true || this.animationPaused === true) {

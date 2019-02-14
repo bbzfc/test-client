@@ -24,8 +24,8 @@ export interface IAppEventTypeAPayload {
 }
 
 export class AppEventTypeA extends AppEventWithPayload<IAppEventTypeAPayload> {
-  static readonly type = 'AppEventTypeA';
-  public readonly type = AppEventTypeA.type;
+  static readonly type: string = 'AppEventTypeA';
+  public readonly type: string = AppEventTypeA.type;
 }
 
 /* -------------------- */
@@ -35,8 +35,8 @@ export interface IAppEventTypeBPayload {
 }
 
 export class AppEventTypeB extends AppEventWithPayload<IAppEventTypeBPayload> {
-  static readonly type = 'AppEventTypeB';
-  public readonly type = AppEventTypeB.type;
+  static readonly type: string = 'AppEventTypeB';
+  public readonly type: string = AppEventTypeB.type;
 }
 
 /* -------------------- */
@@ -48,15 +48,15 @@ export interface IAppEventTypeAnimationFramePayload {
 export class AppEventTypeAnimationFrame extends
   AppEventWithPayload<IAppEventTypeAnimationFramePayload> {
 
-  static readonly type = 'AppEventTypeAnimationFrame';
-  public readonly type = AppEventTypeAnimationFrame.type;
+  static readonly type: string = 'AppEventTypeAnimationFrame';
+  public readonly type: string = AppEventTypeAnimationFrame.type;
 }
 
 /* -------------------- */
 
 export class AppEventTypeWindowResize extends AppEvent {
-  static readonly type = 'AppEventTypeWindowResize';
-  public readonly type = AppEventTypeWindowResize.type;
+  static readonly type: string = 'AppEventTypeWindowResize';
+  public readonly type: string = AppEventTypeWindowResize.type;
 }
 
 /* -------------------- */
@@ -71,8 +71,8 @@ export interface IAppEventTypeRendererGeometryUpdatePayload {
 export class AppEventTypeRendererGeometryUpdate extends
   AppEventWithPayload<IAppEventTypeRendererGeometryUpdatePayload> {
 
-  static readonly type = 'AppEventTypeRendererGeometryUpdate';
-  public readonly type = AppEventTypeRendererGeometryUpdate.type;
+  static readonly type: string = 'AppEventTypeRendererGeometryUpdate';
+  public readonly type: string = AppEventTypeRendererGeometryUpdate.type;
 }
 
 /* -------------------- */
@@ -112,7 +112,7 @@ export class AppEventBus {
     callbackContext: any = null
   ): Subscription {
 
-    const subscription = this.eventStream
+    const subscription: Subscription = this.eventStream
       .pipe(
         filter((event: any): boolean => {
             return (event instanceof typeFilter);
@@ -135,7 +135,7 @@ export class AppEventBus {
     callbackContext: any = null
   ): Subscription {
 
-    const subscription = this.eventStream.subscribe(
+    const subscription: Subscription = this.eventStream.subscribe(
       (event: any): void => {
 
         try {

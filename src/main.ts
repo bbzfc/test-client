@@ -17,7 +17,7 @@ import * as THREE from 'three';
 (window as ITWindow).THREE = THREE;
 import('three/examples/js/loaders/GLTFLoader.js');
 
-function stop(module: IAppModule) {
+function stop(module: IAppModule): void {
   console.log('Will attempt to destroy all...');
 
   // Stop the animation loop.
@@ -51,7 +51,7 @@ function stop(module: IAppModule) {
   console.log('Done!');
 }
 
-function start() {
+function start(): void {
   const module: IAppModule = {};
 
   module.eventBus = new AppEventBus();

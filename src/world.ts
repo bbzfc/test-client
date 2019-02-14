@@ -9,7 +9,8 @@ import {
   Scene,
   GLTFLoader,
   DirectionalLight,
-  Object3D
+  Object3D,
+  GLTF
 } from 'three';
 
 import { AppEventBus, AppEventTypes, AppEventTypeAnimationFrame } from './app-event-bus';
@@ -47,7 +48,7 @@ class World {
     }
     this.isDestroyed = true;
 
-    this.eventSubscriptions.forEach((subscription, idx) => {
+    this.eventSubscriptions.forEach((subscription: Subscription, idx: number) => {
       subscription.unsubscribe();
       delete this.eventSubscriptions[idx];
       this.eventSubscriptions[idx] = null;
@@ -55,7 +56,7 @@ class World {
     delete this.eventSubscriptions;
     this.eventSubscriptions = null;
 
-    for (let i = this.objects.length - 1; i >= 0; i -= 1) {
+    for (let i: number = this.objects.length - 1; i >= 0; i -= 1) {
       this._scene.remove(this.objects[i]);
       delete this.objects[i];
       this.objects[i] = null;
@@ -63,7 +64,7 @@ class World {
     delete this.objects;
     this.objects = null;
 
-    this.geometries.forEach((geometry, idx) => {
+    this.geometries.forEach((geometry: BoxGeometry | PlaneBufferGeometry, idx: number) => {
       geometry.dispose();
       delete this.geometries[idx];
       this.geometries[idx] = null;
@@ -71,7 +72,7 @@ class World {
     delete this.geometries;
     this.geometries = null;
 
-    this.materials.forEach((material, idx) => {
+    this.materials.forEach((material: MeshBasicMaterial, idx: number) => {
       material.dispose();
       delete this.materials[idx];
       this.materials[idx] = null;
@@ -126,20 +127,20 @@ class World {
 
     // ----------------------------------
 
-    const light = new DirectionalLight(0xffffff, 1);
+    const light: DirectionalLight = new DirectionalLight(0xffffff, 1);
     light.position.x = -100;
     light.position.y = 150;
     this._scene.add(light);
 
     // model
     // const loader: GLTFLoader = new (window as I3Window).THREE.GLTFLoader();
-    const loader = new GLTFLoader();
+    const loader: GLTFLoader = new GLTFLoader();
 
-    loader.load('assets/tank2-v.0.1.gltf', (gltf) => {
-      let gltfCamera = null;
-      let gltfLamp = null;
+    loader.load('assets/tank2-v.0.1.gltf', (gltf: GLTF) => {
+      let gltfCamera: Object3D = null;
+      let gltfLamp: Object3D = null;
 
-      gltf.scene.traverse((child) => {
+      gltf.scene.traverse((child: Object3D) => {
         // console.log(child);
 
         if (child.name.toLowerCase() === 'camera') {
@@ -166,13 +167,13 @@ class World {
 
       this.objects.push(gltf.scene);
 
-    }, undefined, (e) => {
+    }, undefined, (e: ErrorEvent) => {
       console.error(e);
     });
 
     // ----------------------------------
 
-    this.objects.forEach((object) => {
+    this.objects.forEach((object: Object3D) => {
       this._scene.add(object);
     });
   }
@@ -180,7 +181,7 @@ class World {
   private initEventSubscriptions(): void {
     this.eventSubscriptions = [];
 
-    const subscription = this.eventBus.subscribe((event: AppEventTypes) => {
+    const subscription: Subscription = this.eventBus.subscribe((event: AppEventTypes) => {
       if (event instanceof AppEventTypeAnimationFrame) {
         // debugger;
 
