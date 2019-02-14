@@ -4,10 +4,13 @@ import {
   DoubleSide,
   HemisphereLight,
   Mesh,
+  MeshStandardMaterial,
   MeshBasicMaterial,
   PlaneBufferGeometry,
   Scene,
   GLTFLoader,
+  TextureLoader,
+  sRGBEncoding,
   DirectionalLight,
   Object3D
 } from 'three';
@@ -135,23 +138,30 @@ class World {
     // const loader: GLTFLoader = new (window as I3Window).THREE.GLTFLoader();
     const loader = new GLTFLoader();
 
+    const textureNumber = Math.floor(Math.random() * 3) + 1;
+    const textureFile = `assets/texture${textureNumber}.png`;
+    const textureLoader = new TextureLoader();
+    const textureObj = textureLoader.load(
+      textureFile
+    );
+    textureObj.encoding = sRGBEncoding;
+    textureObj.flipY = false;
+
     loader.load('assets/tank2.gltf', (gltf: any) => {
-
-      // this is not working
-      const number = Math.floor(Math.random() * 3) + 1;
-      gltf.parser.json.images[0].name = `texture${number}.png`;
-      gltf.parser.json.images[0].uri = `texture${number}.png`;
-
       let gltfCamera = null;
       let gltfLamp = null;
 
       gltf.scene.traverse((child) => {
-        // console.log(child);
-
         if (child.name.toLowerCase() === 'camera') {
           gltfCamera = child;
         } else if (child.name.toLowerCase() === 'lamp') {
           gltfLamp = child;
+        }
+
+        if (child instanceof Mesh) {
+          (child.material as MeshStandardMaterial).map = textureObj;
+          (child.material as MeshStandardMaterial).needsUpdate = true;
+          (child.material as MeshStandardMaterial).map.needsUpdate = true;
         }
       });
 
