@@ -14,13 +14,16 @@ import {
   DirectionalLight,
   Object3D,
   Vector3,
-  GLTF
+  GLTF,
+  MeshStandardMaterial,
+  TextureLoader,
+  sRGBEncoding,
+  Texture
 } from 'three';
 
 import { AppEventBus } from './app-event-bus';
-import {
-  AppEventTypes, AppEventTypeAnimationFrame
-} from './app-events';
+import { AppEventTypeAnimationFrame } from './app-events';
+import { IWorldObject } from './interfaces';
 
 class World {
   private internalScene: Scene;
@@ -30,7 +33,8 @@ class World {
 
   private geometries: Array<BoxGeometry | Geometry | PlaneBufferGeometry>;
   private materials: Array<MeshBasicMaterial | LineBasicMaterial>;
-  private objects: Array<Mesh | HemisphereLight | Object3D | Line>;
+  private objects: IWorldObject[];
+  private textures: Texture[];
 
   private isInitialized: boolean;
   private isDestroyed: boolean;
@@ -67,7 +71,7 @@ class World {
     delete this.eventBus;
     this.eventBus = null;
 
-    this.objects.forEach((object: Mesh | HemisphereLight | Object3D, idx: number) => {
+    this.objects.forEach((object: IWorldObject, idx: number) => {
       this.internalScene.remove(object);
 
       delete this.objects[idx];
@@ -89,6 +93,15 @@ class World {
     delete this.geometries;
     this.geometries = null;
 
+    this.textures.forEach((texture: Texture, idx: number) => {
+      texture.dispose();
+
+      delete this.textures[idx];
+      this.textures[idx] = null;
+    });
+    delete this.textures;
+    this.textures = null;
+
     this.materials.forEach((material: MeshBasicMaterial | LineBasicMaterial, idx: number) => {
       material.dispose();
 
@@ -108,10 +121,11 @@ class World {
     this.geometries = [];
     this.materials = [];
     this.objects = [];
+    this.textures = [];
 
     let geo: BoxGeometry | PlaneBufferGeometry | Geometry;
     let mat: MeshBasicMaterial | LineBasicMaterial;
-    let obj: Mesh | HemisphereLight | DirectionalLight | Line;
+    let obj: IWorldObject;
 
     // ----------------------------------
 
@@ -214,15 +228,32 @@ class World {
 
     const loader: GLTFLoader = new GLTFLoader();
 
-    loader.load('assets/tank2-v.0.2.gltf', (gltf: GLTF) => {
+    loader.load('assets/tank2.gltf', (gltf: GLTF) => {
       let gltfCamera: Object3D = null;
       let gltfLamp: Object3D = null;
+
+      const textureLoader: TextureLoader = new TextureLoader();
+      const textureObj: Texture = textureLoader.load(
+        'assets/texture3.png'
+      );
+
+      // Do we need the below lines?
+      // textureObj.encoding = sRGBEncoding;
+      // textureObj.flipY = false;
 
       gltf.scene.traverse((child: Object3D) => {
         if (child.name.toLowerCase() === 'camera') {
           gltfCamera = child;
         } else if (child.name.toLowerCase() === 'lamp') {
           gltfLamp = child;
+        }
+
+        if (child instanceof Mesh) {
+          (child.material as MeshStandardMaterial).map = textureObj;
+
+          // Do we need the below lines?
+          // (child.material as MeshStandardMaterial).needsUpdate = true;
+          // (child.material as MeshStandardMaterial).map.needsUpdate = true;
         }
       });
 
@@ -239,6 +270,7 @@ class World {
       gltf.scene.position.y = -5;
       gltf.scene.position.z = -3;
 
+      this.textures.push(textureObj);
       this.objects.push(gltf.scene);
       this.internalScene.add(gltf.scene);
     }, (progress: ProgressEvent) => {
@@ -249,7 +281,7 @@ class World {
 
     // ----------------------------------
 
-    this.objects.forEach((object: Object3D) => {
+    this.objects.forEach((object: IWorldObject) => {
       this.internalScene.add(object);
     });
   }

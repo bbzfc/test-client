@@ -1,5 +1,6 @@
 import './styles/main.scss';
-import './models/gltf/tank2/tank2-v.0.2.gltf';
+import './models/gltf/tank2/tank2.gltf';
+import './models/gltf/tank2/tank2.bin';
 import './models/gltf/tank2/texture1.png';
 import './models/gltf/tank2/texture2.png';
 import './models/gltf/tank2/texture3.png';
@@ -125,7 +126,7 @@ function start(): void {
           z: 1,
           fieldOfView: 40
         },
-        theta: 90
+        theta: 70
       }
     );
 

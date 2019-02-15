@@ -23,6 +23,8 @@ import { ITWindow } from './three-window.interfaces';
 
 import { IAppEventLoggerOptions } from './app-event-logger.interfaces';
 
+import { IWorldObject } from './world.interfaces';
+
 export {
   IAppEventTypeAnimationFramePayload,
   IAppEventTypeRendererGeometryUpdatePayload,
@@ -41,5 +43,7 @@ export {
 
   ITWindow,
 
-  IAppEventLoggerOptions
+  IAppEventLoggerOptions,
+
+  IWorldObject
 };
