@@ -10,7 +10,8 @@ import { Math as TMath } from 'three';
 import { AppEventBus } from './app-event-bus';
 import {
   AppEventTypeRendererGeometryUpdate,
-  AppEventTypeAnimationFrame
+  AppEventTypeAnimationFrame,
+  AppEventTypeCameraLook
 } from './app-events';
 import { IFirstPersonCameraOptions } from './interfaces';
 
@@ -94,7 +95,7 @@ class FirstPersonCamera {
 
     this.enabled = true;
     this.update(0);
-    this.enabled = false;
+    // this.enabled = false;
 
     this.initEventSubscriptions();
 
@@ -111,6 +112,11 @@ class FirstPersonCamera {
   ): void {
     this.internalCamera.aspect = appWidth / appHeight;
     this.internalCamera.updateProjectionMatrix();
+  }
+
+  public cameraLookUpdate(xPos: number, yPos: number): void {
+    this.mouseX = xPos;
+    this.mouseY = yPos;
   }
 
   public onMouseDown(event: MouseEvent): void {
@@ -140,6 +146,14 @@ class FirstPersonCamera {
       }
     );
     this.eventSubscriptions.push(subscription);
+
+    subscription = this.eventBus.on(
+      AppEventTypeCameraLook,
+      (event: AppEventTypeCameraLook) => {
+        this.cameraLookUpdate(event.payload.xPos, event.payload.yPos);
+      }
+    );
+    this.eventSubscriptions.push(subscription);
   }
 
   public update(delta: number): void {
@@ -166,20 +180,11 @@ class FirstPersonCamera {
     const actualLookSpeed: number = delta * this.lookSpeed;
     this.theta += this.mouseX * actualLookSpeed;
 
-    console.log('mouseX = ' + this.mouseX + ', actualLookSpeed = ' + actualLookSpeed);
-    console.log('theta = ' + this.theta);
-
     const thetaRad: number = TMath.degToRad(this.theta);
 
     this.targetPosition.x = this.internalCamera.position.x + Math.sin(thetaRad);
     this.targetPosition.y = this.internalCamera.position.y + Math.cos(thetaRad);
     this.targetPosition.z = 1;
-
-    console.log(
-      'pos.x = ' + this.targetPosition.x + ', ' +
-      'pos.y = ' + this.targetPosition.y + ', ' +
-      'pos.z = ' + this.targetPosition.z + '.'
-    );
 
     this.internalCamera.lookAt(this.targetPosition);
   }

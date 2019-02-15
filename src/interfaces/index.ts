@@ -3,7 +3,8 @@ import {
   IAppEventTypeRendererGeometryUpdatePayload,
   IAppEventTypeKeyDownPayload,
   IAppEventTypeKeyUpPayload,
-  IAppEventTypeMouseMovePayload
+  IAppEventTypeMouseMovePayload,
+  IAppEventTypeCameraLookPayload
 } from './app-event-bus.interfaces';
 
 import { IAppModule } from './app-module.interfaces';
@@ -28,6 +29,7 @@ export {
   IAppEventTypeKeyDownPayload,
   IAppEventTypeKeyUpPayload,
   IAppEventTypeMouseMovePayload,
+  IAppEventTypeCameraLookPayload,
 
   IAppModule,
 

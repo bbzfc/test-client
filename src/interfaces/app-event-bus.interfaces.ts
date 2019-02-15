@@ -22,10 +22,16 @@ interface IAppEventTypeMouseMovePayload {
   mouseY: number;
 }
 
+interface IAppEventTypeCameraLookPayload {
+  xPos: number;
+  yPos: number;
+}
+
 export {
   IAppEventTypeAnimationFramePayload,
   IAppEventTypeRendererGeometryUpdatePayload,
   IAppEventTypeKeyDownPayload,
   IAppEventTypeKeyUpPayload,
-  IAppEventTypeMouseMovePayload
+  IAppEventTypeMouseMovePayload,
+  IAppEventTypeCameraLookPayload
 };

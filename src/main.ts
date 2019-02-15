@@ -20,7 +20,9 @@ import * as THREE from 'three';
 (window as ITWindow).THREE = THREE;
 import('three/examples/js/loaders/GLTFLoader.js');
 
-const timeToLive: number = 20; // seconds
+const RELOAD_APP_TIMEOUT: number = 3; // seconds
+const RELOAD_APP_FOREVER: boolean = false;
+const ENABLE_EVENT_CONSOLE_LOG: boolean = false;
 
 function stop(module: IAppModule): void {
   console.log('Will attempt to destroy all...');
@@ -36,7 +38,11 @@ function stop(module: IAppModule): void {
   module.keyboardInput.destroy();
   module.mouseInput.destroy();
   module.windowResizer.destroy();
-  module.appEventLogger.destroy();
+
+  if (typeof ENABLE_EVENT_CONSOLE_LOG === 'boolean' && ENABLE_EVENT_CONSOLE_LOG) {
+    module.appEventLogger.destroy();
+  }
+
   module.eventBus.destroy();
 
   delete module.world;
@@ -63,8 +69,10 @@ function stop(module: IAppModule): void {
   delete module.windowResizer;
   module.windowResizer = null;
 
-  delete module.appEventLogger;
-  module.appEventLogger = null;
+  if (typeof ENABLE_EVENT_CONSOLE_LOG === 'boolean' && ENABLE_EVENT_CONSOLE_LOG) {
+    delete module.appEventLogger;
+    module.appEventLogger = null;
+  }
 
   delete module.eventBus;
   module.eventBus = null;
@@ -77,12 +85,16 @@ function start(): void {
   const appContainer: IApplicationContainer = document.getElementById('app-container');
 
   module.eventBus = new AppEventBus();
-  module.appEventLogger = new AppEventLogger(
-    module.eventBus,
-    {
-      animationFrame: false
-    }
-  );
+
+  if (typeof ENABLE_EVENT_CONSOLE_LOG === 'boolean' && ENABLE_EVENT_CONSOLE_LOG) {
+    module.appEventLogger = new AppEventLogger(
+      module.eventBus,
+      {
+        animationFrame: false
+      }
+    );
+  }
+
   module.windowResizer = new WindowResizer(module.eventBus);
   module.keyboardInput = new KeyboarInput(module.eventBus, appContainer, true);
   module.mouseInput = new MouseInput(module.eventBus, appContainer, true);
@@ -102,11 +114,11 @@ function start(): void {
     module.fpCamera = new FirstPersonCamera(
       module.eventBus,
       {
-        lookSpeed: 0.1,
+        lookSpeed: 50,
         movementSpeed: 1,
         camera: {
           x: -40,
-          y: -10,
+          y: -20,
           z: 1,
           fieldOfView: 40
         },
@@ -122,13 +134,18 @@ function start(): void {
     // Start the animation loop.
     module.app.start();
 
-    window.setTimeout(() => {
-      stop(module);
-    }, timeToLive * 1000);
+    if (typeof RELOAD_APP_FOREVER === 'boolean' && RELOAD_APP_FOREVER) {
+      window.setTimeout(() => {
+        stop(module);
+      }, RELOAD_APP_TIMEOUT * 1000);
+    }
   });
 }
 
 start();
-window.setInterval(() => {
-  start();
-}, (timeToLive + 1) * 1000);
+
+if (typeof RELOAD_APP_FOREVER === 'boolean' && RELOAD_APP_FOREVER) {
+  window.setInterval(() => {
+    start();
+  }, (RELOAD_APP_TIMEOUT + 1) * 1000);
+}

@@ -3,7 +3,8 @@ import {
   IAppEventTypeRendererGeometryUpdatePayload,
   IAppEventTypeKeyDownPayload,
   IAppEventTypeKeyUpPayload,
-  IAppEventTypeMouseMovePayload
+  IAppEventTypeMouseMovePayload,
+  IAppEventTypeCameraLookPayload
 } from './interfaces';
 
 abstract class AppEvent {
@@ -67,6 +68,11 @@ export class AppEventTypeMouseMove extends AppEventWithPayload<IAppEventTypeMous
   public readonly type: string = AppEventTypeMouseMove.type;
 }
 
+export class AppEventTypeCameraLook extends AppEventWithPayload<IAppEventTypeCameraLookPayload> {
+  static readonly type: string = 'AppEventTypeCameraLook';
+  public readonly type: string = AppEventTypeCameraLook.type;
+}
+
 export type AppEventTypes =
   AppEventTypeAnimationFrame |
   AppEventTypeWindowResize |
@@ -75,4 +81,5 @@ export type AppEventTypes =
   AppEventTypeKeyUp |
   AppEventTypeMouseDown |
   AppEventTypeMouseUp |
-  AppEventTypeMouseMove;
+  AppEventTypeMouseMove |
+  AppEventTypeCameraLook;

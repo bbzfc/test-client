@@ -13,6 +13,7 @@ import {
   AppEventTypeMouseDown,
   AppEventTypeMouseUp,
   AppEventTypeMouseMove,
+  AppEventTypeCameraLook
 } from './app-events';
 
 class AppEventLogger {
@@ -57,7 +58,8 @@ class AppEventLogger {
       'keyUp',
       'mouseDown',
       'mouseUp',
-      'mouseMove'
+      'mouseMove',
+      'cameraLook'
     ];
 
     availableOptions.forEach((option: string) => {
@@ -143,6 +145,13 @@ class AppEventLogger {
         console.log('event :: AppEventTypeMouseMove');
         console.log('payload.mouseX = ', event.payload.mouseX);
         console.log('payload.mouseY = ', event.payload.mouseY);
+      } else if (
+        this.options.cameraLook && event instanceof AppEventTypeCameraLook
+      ) {
+        console.log('---------- -------- ----- ---- -- -');
+        console.log('event :: AppEventTypeCameraLook');
+        console.log('payload.xPos = ', event.payload.xPos);
+        console.log('payload.yPos = ', event.payload.yPos);
       }
     });
 

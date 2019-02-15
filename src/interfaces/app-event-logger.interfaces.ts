@@ -7,6 +7,7 @@ interface IAppEventLoggerOptions {
   mouseDown?: boolean;
   mouseUp?: boolean;
   mouseMove?: boolean;
+  cameraLook?: boolean;
 }
 
 export {
