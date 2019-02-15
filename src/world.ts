@@ -214,7 +214,7 @@ class World {
 
     const loader: GLTFLoader = new GLTFLoader();
 
-    loader.load('assets/tank2-v.0.1.gltf', (gltf: GLTF) => {
+    loader.load('assets/tank2-v.0.2.gltf', (gltf: GLTF) => {
       let gltfCamera: Object3D = null;
       let gltfLamp: Object3D = null;
 

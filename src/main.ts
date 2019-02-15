@@ -1,5 +1,5 @@
 import './styles/main.scss';
-import './models/gltf/tank2/tank2-v.0.1.gltf';
+import './models/gltf/tank2/tank2-v.0.2.gltf';
 
 import { ITWindow, IAppModule, IApplicationContainer } from './interfaces';
 
