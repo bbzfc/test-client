@@ -1,5 +1,8 @@
 import { Subscription } from 'rxjs';
 import {
+  Geometry,
+  Line,
+  LineBasicMaterial,
   BoxGeometry,
   DoubleSide,
   HemisphereLight,
@@ -10,20 +13,24 @@ import {
   GLTFLoader,
   DirectionalLight,
   Object3D,
+  Vector3,
   GLTF
 } from 'three';
 
-import { AppEventBus, AppEventTypes, AppEventTypeAnimationFrame } from './app-event-bus';
+import { AppEventBus } from './app-event-bus';
+import {
+  AppEventTypes, AppEventTypeAnimationFrame
+} from './app-events';
 
 class World {
-  private _scene: Scene;
+  private internalScene: Scene;
 
   private eventBus: AppEventBus;
   private eventSubscriptions: Subscription[];
 
-  private geometries: Array<BoxGeometry | PlaneBufferGeometry>;
-  private materials: MeshBasicMaterial[];
-  private objects: Array<Mesh | HemisphereLight | Object3D>;
+  private geometries: Array<BoxGeometry | Geometry | PlaneBufferGeometry>;
+  private materials: Array<MeshBasicMaterial | LineBasicMaterial>;
+  private objects: Array<Mesh | HemisphereLight | Object3D | Line>;
 
   private isInitialized: boolean;
   private isDestroyed: boolean;
@@ -39,7 +46,7 @@ class World {
   }
 
   public get scene(): Scene {
-    return this._scene;
+    return this.internalScene;
   }
 
   public destroy(): void {
@@ -50,72 +57,83 @@ class World {
 
     this.eventSubscriptions.forEach((subscription: Subscription, idx: number) => {
       subscription.unsubscribe();
+
       delete this.eventSubscriptions[idx];
       this.eventSubscriptions[idx] = null;
     });
     delete this.eventSubscriptions;
     this.eventSubscriptions = null;
 
-    for (let i: number = this.objects.length - 1; i >= 0; i -= 1) {
-      this._scene.remove(this.objects[i]);
-      delete this.objects[i];
-      this.objects[i] = null;
-    }
+    delete this.eventBus;
+    this.eventBus = null;
+
+    this.objects.forEach((object: Mesh | HemisphereLight | Object3D, idx: number) => {
+      this.internalScene.remove(object);
+
+      delete this.objects[idx];
+      this.objects[idx] = null;
+    });
     delete this.objects;
     this.objects = null;
 
-    this.geometries.forEach((geometry: BoxGeometry | PlaneBufferGeometry, idx: number) => {
+    this.geometries.forEach(
+      (geometry: BoxGeometry | Geometry | PlaneBufferGeometry, idx: number) => {
+
       geometry.dispose();
+
       delete this.geometries[idx];
       this.geometries[idx] = null;
-    });
+
+      }
+    );
     delete this.geometries;
     this.geometries = null;
 
-    this.materials.forEach((material: MeshBasicMaterial, idx: number) => {
+    this.materials.forEach((material: MeshBasicMaterial | LineBasicMaterial, idx: number) => {
       material.dispose();
+
       delete this.materials[idx];
       this.materials[idx] = null;
     });
     delete this.materials;
     this.materials = null;
+
+    delete this.internalScene;
+    this.internalScene = null;
   }
 
   private initWorldObjects(): void {
-    this._scene = new Scene();
+    this.internalScene = new Scene();
 
     this.geometries = [];
     this.materials = [];
     this.objects = [];
 
-    let geo: BoxGeometry | PlaneBufferGeometry;
-    let mat: MeshBasicMaterial;
-    let obj: Mesh | HemisphereLight;
+    let geo: BoxGeometry | PlaneBufferGeometry | Geometry;
+    let mat: MeshBasicMaterial | LineBasicMaterial;
+    let obj: Mesh | HemisphereLight | DirectionalLight | Line;
+
+    // ----------------------------------
 
     geo = new BoxGeometry(3, 3, 3);
     mat = new MeshBasicMaterial({ color: 0xff0000 });
     obj = new Mesh(geo, mat);
 
-    obj.rotateX(31 * (Math.PI / 180));
-    obj.rotateY(51 * (Math.PI / 180));
-
-    // obj.position.y = 0;
-    // obj.position.x = 0;
-    // obj.position.z = 0;
-
-    obj.translateZ(-2);
-    obj.translateX(3);
-    obj.translateY(15);
+    obj.position.x = 10;
 
     this.geometries.push(geo);
     this.materials.push(mat);
     this.objects.push(obj);
 
-    obj = new HemisphereLight(0xeeeeee, 0x121212, 0.5);
+    // ----------------------------------
+
+    obj = new HemisphereLight(0xeeeeee, 0x121212, 1);
 
     this.objects.push(obj);
 
-    geo = new PlaneBufferGeometry(2000, 2000, 8, 8);
+    // ----------------------------------
+
+    geo = new PlaneBufferGeometry(1000, 1000, 10, 10);
     mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
     obj = new Mesh(geo, mat);
 
@@ -127,13 +145,73 @@ class World {
 
     // ----------------------------------
 
-    const light: DirectionalLight = new DirectionalLight(0xffffff, 1);
-    light.position.x = -100;
-    light.position.y = 150;
-    this._scene.add(light);
+    obj = new DirectionalLight(0xffffff, 1);
 
-    // model
-    // const loader: GLTFLoader = new (window as I3Window).THREE.GLTFLoader();
+    obj.position.x = -20;
+    obj.position.y = 20;
+    obj.position.z = 5;
+
+    // Set the cube as the light's target.
+    obj.target = this.objects[0];
+
+    this.objects.push(obj);
+
+    // ----------------------------------
+
+    geo = new Geometry();
+    geo.vertices.push(
+      new Vector3(-1000, 0, 0),
+      new Vector3(0, 0, 0),
+      new Vector3(1000, 0, 0)
+    );
+    mat = new LineBasicMaterial({
+      color: 0xffffff, // white
+      linewidth: 3
+    });
+    obj = new Line(geo, mat);
+
+    this.geometries.push(geo);
+    this.materials.push(mat);
+    this.objects.push(obj);
+
+    // ----------------------------------
+
+    geo = new Geometry();
+    geo.vertices.push(
+      new Vector3(0, -1000, 0),
+      new Vector3(0, 0, 0),
+      new Vector3(0, 1000, 0)
+    );
+    mat = new LineBasicMaterial({
+      color: 0x00ff00, // green
+      linewidth: 3
+    });
+    obj = new Line(geo, mat);
+
+    this.geometries.push(geo);
+    this.materials.push(mat);
+    this.objects.push(obj);
+
+    // ----------------------------------
+
+    geo = new Geometry();
+    geo.vertices.push(
+      new Vector3(0, 0, -1000),
+      new Vector3(0, 0, 0),
+      new Vector3(0, 0, 1000)
+    );
+    mat = new LineBasicMaterial({
+      color: 0x800080, // purple
+      linewidth: 3
+    });
+    obj = new Line(geo, mat);
+
+    this.geometries.push(geo);
+    this.materials.push(mat);
+    this.objects.push(obj);
+
+    // ----------------------------------
+
     const loader: GLTFLoader = new GLTFLoader();
 
     loader.load('assets/tank2-v.0.1.gltf', (gltf: GLTF) => {
@@ -141,8 +219,6 @@ class World {
       let gltfLamp: Object3D = null;
 
       gltf.scene.traverse((child: Object3D) => {
-        // console.log(child);
-
         if (child.name.toLowerCase() === 'camera') {
           gltfCamera = child;
         } else if (child.name.toLowerCase() === 'lamp') {
@@ -159,48 +235,57 @@ class World {
 
       gltf.scene.rotateX(90 * (Math.PI / 180));
       gltf.scene.rotateY(270 * (Math.PI / 180));
-      gltf.scene.translateZ(-20);
-      gltf.scene.translateX(-2);
-      gltf.scene.translateY(-3);
-
-      this._scene.add(gltf.scene);
+      gltf.scene.position.x = 20;
+      gltf.scene.position.y = -5;
+      gltf.scene.position.z = -3;
 
       this.objects.push(gltf.scene);
-
-    }, undefined, (e: ErrorEvent) => {
-      console.error(e);
+      this.internalScene.add(gltf.scene);
+    }, (progress: ProgressEvent) => {
+      console.log('GLTF progress => loaded = ' + progress.loaded + ', total = ' + progress.total);
+    }, (e: ErrorEvent) => {
+      console.error('GLTF error => ', e);
     });
 
     // ----------------------------------
 
     this.objects.forEach((object: Object3D) => {
-      this._scene.add(object);
+      this.internalScene.add(object);
     });
   }
 
   private initEventSubscriptions(): void {
     this.eventSubscriptions = [];
 
-    const subscription: Subscription = this.eventBus.subscribe((event: AppEventTypes) => {
-      if (event instanceof AppEventTypeAnimationFrame) {
-        // debugger;
-
-        this.updateWorld();
+    const subscription: Subscription = this.eventBus.on(
+      AppEventTypeAnimationFrame,
+      (event: AppEventTypeAnimationFrame) => {
+        this.updateWorld(event.payload.delta);
       }
-    });
+    );
+
     this.eventSubscriptions.push(subscription);
   }
 
-  private updateWorld(): void {
-    // const delta = this.app.clock.getDelta();
-    // this.controls.update(delta);
+  private updateWorld(delta: number): void {
+    this.objects[0].translateY(2.5 * delta);
 
-    // debugger;
-    this.objects[0].rotation.x += 0.01;
+    // Uncomment the line below to lower the frame rate.
+    // this.stressTest();
 
-    if (this.objects[3]) {
-      this.objects[3].position.x -= 0.05;
+    if (this.objects[7]) {
+      this.objects[7].position.x -= 2.5 * delta;
     }
+  }
+
+  private stressTest(): void {
+    const M: number = 0.5 * 1000 * 1000;
+    const N: number = Math.floor(Math.random() * M);
+    const a: number[] = Array.from(Array(N).keys())
+      .map((i: number) => Math.random() * i * (1 / N));
+    const b: number = a.reduce((p: number, n: number) => p + n);
+
+    console.log(b);
   }
 }
 

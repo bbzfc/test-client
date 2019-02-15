@@ -1,7 +1,7 @@
 type IApplicationContainer = HTMLDocument | HTMLElement;
 
 interface IApplicationOptions {
-  container?: IApplicationContainer;
+  appContainer?: IApplicationContainer;
   threeJsRendererCanvasClass?: string;
 }
 

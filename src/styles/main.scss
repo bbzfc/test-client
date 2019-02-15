@@ -30,7 +30,15 @@ body {
     margin: 0;
     padding: 0;
     line-height: 0;
+  }
+
+  #app-container, .three-js-renderer-canvas {
     outline: none;
     border: none;
+
+    &:active, &:hover, &:focus {
+      outline: none;
+      border: none;
+    }
   }
 }

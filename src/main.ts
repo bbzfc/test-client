@@ -1,8 +1,7 @@
 import './styles/main.scss';
 import './models/gltf/tank2/tank2-v.0.1.gltf';
 
-import { ITWindow } from './interfaces/three-window.interfaces';
-import { IAppModule } from './interfaces/app-module.interfaces';
+import { ITWindow, IAppModule, IApplicationContainer } from './interfaces';
 
 import { AppEventBus } from './app-event-bus';
 import { WindowResizer } from './window-resizer';
@@ -10,12 +9,18 @@ import { Application } from './application';
 import { Controls } from './controls';
 import { World } from './world';
 import { FirstPersonCamera } from './first-person-camera';
+import { KeyboarInput } from './keyboard-input';
+import { MouseInput } from './mouse-input';
+import { FrameRate } from './frame-rate';
+import { AppEventLogger } from './app-event-logger';
 
 // Enable working with `GLTFLoader`. Right now it can't be simply imported
 // as a TypeScript module. So we have this hack ;)
 import * as THREE from 'three';
 (window as ITWindow).THREE = THREE;
 import('three/examples/js/loaders/GLTFLoader.js');
+
+const timeToLive: number = 20; // seconds
 
 function stop(module: IAppModule): void {
   console.log('Will attempt to destroy all...');
@@ -27,7 +32,11 @@ function stop(module: IAppModule): void {
   module.controls.destroy();
   module.fpCamera.destroy();
   module.app.destroy();
+  module.frameRate.destroy();
+  module.keyboardInput.destroy();
+  module.mouseInput.destroy();
   module.windowResizer.destroy();
+  module.appEventLogger.destroy();
   module.eventBus.destroy();
 
   delete module.world;
@@ -42,8 +51,20 @@ function stop(module: IAppModule): void {
   delete module.app;
   module.app = null;
 
+  delete module.frameRate;
+  module.frameRate = null;
+
+  delete module.mouseInput;
+  module.mouseInput = null;
+
+  delete module.keyboardInput;
+  module.keyboardInput = null;
+
   delete module.windowResizer;
   module.windowResizer = null;
+
+  delete module.appEventLogger;
+  module.appEventLogger = null;
 
   delete module.eventBus;
   module.eventBus = null;
@@ -53,14 +74,24 @@ function stop(module: IAppModule): void {
 
 function start(): void {
   const module: IAppModule = {};
+  const appContainer: IApplicationContainer = document.getElementById('app-container');
 
   module.eventBus = new AppEventBus();
+  module.appEventLogger = new AppEventLogger(
+    module.eventBus,
+    {
+      animationFrame: false
+    }
+  );
   module.windowResizer = new WindowResizer(module.eventBus);
+  module.keyboardInput = new KeyboarInput(module.eventBus, appContainer, true);
+  module.mouseInput = new MouseInput(module.eventBus, appContainer, true);
+  module.frameRate = new FrameRate(module.eventBus);
 
   module.app = new Application(
     module.eventBus,
     {
-      container: document.getElementById('app-container'),
+      appContainer,
       threeJsRendererCanvasClass: 'three-js-renderer-canvas'
     }
   );
@@ -74,10 +105,12 @@ function start(): void {
         lookSpeed: 0.1,
         movementSpeed: 1,
         camera: {
-          x: -20,
-          y: 10,
-          fieldOfView: 45
-        }
+          x: -40,
+          y: -10,
+          z: 1,
+          fieldOfView: 40
+        },
+        theta: 90
       }
     );
 
@@ -91,11 +124,11 @@ function start(): void {
 
     window.setTimeout(() => {
       stop(module);
-    }, 7 * 1000);
+    }, timeToLive * 1000);
   });
 }
 
 start();
 window.setInterval(() => {
   start();
-}, 10 * 1000);
+}, (timeToLive + 1) * 1000);

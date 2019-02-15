@@ -1,15 +1,15 @@
 import { Clock, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { Subscription } from 'rxjs';
 
-import { IApplicationOptions, IApplicationContainer } from './interfaces/application.interfaces';
+import { IApplicationOptions, IApplicationContainer } from './interfaces';
 
 import { domReady } from './utils';
+import { AppEventBus } from './app-event-bus';
 import {
-  AppEventBus,
   AppEventTypeWindowResize,
   AppEventTypeAnimationFrame,
   AppEventTypeRendererGeometryUpdate
-} from './app-event-bus';
+} from './app-events';
 
 class Application {
   private clock: Clock = null;
@@ -81,6 +81,8 @@ class Application {
       delete this.eventSubscriptions[idx];
       this.eventSubscriptions[idx] = null;
     });
+    delete this.eventSubscriptions;
+    this.eventSubscriptions = null;
 
     delete this.clock;
     delete this.internalScene;
@@ -123,8 +125,8 @@ class Application {
   }
 
   private initAppContainer(options: IApplicationOptions): void {
-    if (options.container) {
-      this.appContainer = options.container;
+    if (options.appContainer) {
+      this.appContainer = options.appContainer;
     } else {
       this.appContainer = document;
     }

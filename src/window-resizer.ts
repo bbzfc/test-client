@@ -1,4 +1,5 @@
-import { AppEventBus, AppEventTypeWindowResize } from './app-event-bus';
+import { AppEventBus } from './app-event-bus';
+import { AppEventTypeWindowResize } from './app-events';
 
 class WindowResizer {
   private eventBus: AppEventBus;

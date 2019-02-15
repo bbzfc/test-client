@@ -9,6 +9,7 @@ interface IFirstPersonCameraOptions {
   lookSpeed?: number;
   movementSpeed?: number;
   camera?: IApplicationOptionsCamera;
+  theta?: number;
 }
 
 export {

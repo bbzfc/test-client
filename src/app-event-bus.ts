@@ -1,92 +1,9 @@
 import { Subject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
-// ----------------------------------------------------------------------------------- //
-// ----------------------------------------------------------------------------------- //
+import { AppEventTypes } from './app-events';
 
-abstract class AppEvent {
-  public readonly type: string;
-}
-
-abstract class AppEventWithPayload<T> extends AppEvent {
-  public readonly payload: T;
-
-  constructor(payload: T) {
-    super();
-    this.payload = payload;
-  }
-}
-
-/* -------------------- */
-
-export interface IAppEventTypeAPayload {
-  strData: string;
-}
-
-export class AppEventTypeA extends AppEventWithPayload<IAppEventTypeAPayload> {
-  static readonly type: string = 'AppEventTypeA';
-  public readonly type: string = AppEventTypeA.type;
-}
-
-/* -------------------- */
-
-export interface IAppEventTypeBPayload {
-  foo: string;
-}
-
-export class AppEventTypeB extends AppEventWithPayload<IAppEventTypeBPayload> {
-  static readonly type: string = 'AppEventTypeB';
-  public readonly type: string = AppEventTypeB.type;
-}
-
-/* -------------------- */
-
-export interface IAppEventTypeAnimationFramePayload {
-  delta: number;
-}
-
-export class AppEventTypeAnimationFrame extends
-  AppEventWithPayload<IAppEventTypeAnimationFramePayload> {
-
-  static readonly type: string = 'AppEventTypeAnimationFrame';
-  public readonly type: string = AppEventTypeAnimationFrame.type;
-}
-
-/* -------------------- */
-
-export class AppEventTypeWindowResize extends AppEvent {
-  static readonly type: string = 'AppEventTypeWindowResize';
-  public readonly type: string = AppEventTypeWindowResize.type;
-}
-
-/* -------------------- */
-
-export interface IAppEventTypeRendererGeometryUpdatePayload {
-  appWidth: number;
-  appHeight: number;
-  offsetLeft: number;
-  offsetTop: number;
-}
-
-export class AppEventTypeRendererGeometryUpdate extends
-  AppEventWithPayload<IAppEventTypeRendererGeometryUpdatePayload> {
-
-  static readonly type: string = 'AppEventTypeRendererGeometryUpdate';
-  public readonly type: string = AppEventTypeRendererGeometryUpdate.type;
-}
-
-/* -------------------- */
-
-export type AppEventTypes =
-  AppEventTypeA |
-  AppEventTypeB |
-  AppEventTypeAnimationFrame |
-  AppEventTypeWindowResize;
-
-// ----------------------------------------------------------------------------------- //
-// ----------------------------------------------------------------------------------- //
-
-type CallbackFunction<T = any> = (event: T) => void;
+type CallbackFunction<T = AppEventTypes> = (event: T) => void;
 type NewableType<T> = new (...args: any[]) => T;
 
 export class AppEventBus {
@@ -102,7 +19,7 @@ export class AppEventBus {
     this.isDestroyed = false;
   }
 
-  public emit(event: any): void {
+  public emit(event: AppEventTypes): void {
     this.eventStream.next(event);
   }
 
@@ -157,6 +74,7 @@ export class AppEventBus {
     this.isDestroyed = true;
 
     this.eventStream.complete();
+
     delete this.eventStream;
     this.eventStream = null;
   }
