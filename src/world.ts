@@ -8,6 +8,7 @@ import {
   HemisphereLight,
   Mesh,
   MeshBasicMaterial,
+  ShaderMaterial,
   PlaneBufferGeometry,
   Scene,
   GLTFLoader,
@@ -23,7 +24,7 @@ import {
 
 import { AppEventBus } from './app-event-bus';
 import { AppEventTypeAnimationFrame } from './app-events';
-import { IWorldObject } from './interfaces';
+import { IWorldObject, IWorldMaterial } from './interfaces';
 
 class World {
   private internalScene: Scene;
@@ -32,7 +33,7 @@ class World {
   private eventSubscriptions: Subscription[];
 
   private geometries: Array<BoxGeometry | Geometry | PlaneBufferGeometry>;
-  private materials: Array<MeshBasicMaterial | LineBasicMaterial>;
+  private materials: IWorldMaterial[];
   private objects: IWorldObject[];
   private textures: Texture[];
 
@@ -102,7 +103,7 @@ class World {
     delete this.textures;
     this.textures = null;
 
-    this.materials.forEach((material: MeshBasicMaterial | LineBasicMaterial, idx: number) => {
+    this.materials.forEach((material: IWorldMaterial, idx: number) => {
       material.dispose();
 
       delete this.materials[idx];
@@ -124,16 +125,25 @@ class World {
     this.textures = [];
 
     let geo: BoxGeometry | PlaneBufferGeometry | Geometry;
-    let mat: MeshBasicMaterial | LineBasicMaterial;
+    let mat: IWorldMaterial;
     let obj: IWorldObject;
 
     // ----------------------------------
 
     geo = new BoxGeometry(3, 3, 3);
     mat = new MeshBasicMaterial({ color: 0xff0000 });
+    mat = new ShaderMaterial({
+      uniforms: {
+        scale: { type: 'f', value: 10.0 }
+      },
+      vertexShader: document.getElementById( 'vertexShader' ).textContent,
+      fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+    });
     obj = new Mesh(geo, mat);
 
-    obj.position.x = 10;
+    obj.position.x = 5;
+    obj.position.y = -30;
+    obj.position.z = 4;
 
     this.geometries.push(geo);
     this.materials.push(mat);
@@ -229,7 +239,15 @@ class World {
 
     // ----------------------------------
 
-    this.loadTank('assets/tank2.gltf', 'assets/texture4.png');
+    this.loadModelCustomTexture(
+      'assets/tank2.gltf',
+      'assets/texture4.png',
+      new Vector3(20, -5, -3)
+    );
+    this.loadModel(
+      'assets/tank3-v.1.gltf',
+      new Vector3(20, -15, -3)
+    );
 
     // ----------------------------------
 
@@ -238,7 +256,11 @@ class World {
     });
   }
 
-  private loadTank(tankModel: string, tankTexture: string): void {
+  private loadModelCustomTexture(
+    tankModel: string,
+    tankTexture: string,
+    startingPosition: Vector3
+  ): void {
     const loader: GLTFLoader = new GLTFLoader();
 
     loader.load(tankModel, (gltf: GLTF) => {
@@ -254,6 +276,15 @@ class World {
 
           gltf.scene.traverse((child: Mesh | Object3D) => {
             if (
+              child.name.toLowerCase().includes('camera') ||
+              child.name.toLowerCase().includes('scene') ||
+              child.name.toLowerCase().includes('light')
+            ) {
+              notNeededChildren.push(child);
+              return;
+            }
+
+            if (
               child instanceof Mesh &&
               child.material instanceof MeshStandardMaterial
             ) {
@@ -263,8 +294,6 @@ class World {
               childMaterial.map.encoding = sRGBEncoding;
               childMaterial.map.needsUpdate = true;
               childMaterial.needsUpdate = true;
-            } else {
-              notNeededChildren.push(child);
             }
           });
 
@@ -278,9 +307,9 @@ class World {
 
           gltf.scene.rotateX(90 * (Math.PI / 180));
           gltf.scene.rotateY(270 * (Math.PI / 180));
-          gltf.scene.position.x = 20;
-          gltf.scene.position.y = -5;
-          gltf.scene.position.z = -3;
+          gltf.scene.position.x = startingPosition.x;
+          gltf.scene.position.y = startingPosition.y;
+          gltf.scene.position.z = startingPosition.z;
 
           this.textures.push(texture);
           this.objects.push(gltf.scene);
@@ -294,6 +323,49 @@ class World {
           console.error('texture error => ', e);
         }
       );
+    }, (progress: ProgressEvent) => {
+      console.log('GLTF progress => loaded = ' + progress.loaded + ', total = ' + progress.total);
+    }, (e: ErrorEvent) => {
+      console.error('GLTF error => ', e);
+    });
+  }
+
+  private loadModel(
+    tankModel: string,
+    startingPosition: Vector3
+  ): void {
+    const loader: GLTFLoader = new GLTFLoader();
+
+    loader.load(tankModel, (gltf: GLTF) => {
+      let notNeededChildren: Object3D[] = [];
+
+      gltf.scene.traverse((child: Mesh | Object3D) => {
+        if (
+          child.name.toLowerCase().includes('camera') ||
+          child.name.toLowerCase().includes('scene') ||
+          child.name.toLowerCase().includes('light')
+        ) {
+          notNeededChildren.push(child);
+        }
+      });
+
+      notNeededChildren.forEach((child: Object3D, idx: number) => {
+        gltf.scene.remove(child);
+
+        delete notNeededChildren[idx];
+        notNeededChildren[idx] = null;
+      });
+      notNeededChildren = [];
+
+      gltf.scene.rotateX(90 * (Math.PI / 180));
+      gltf.scene.rotateY(270 * (Math.PI / 180));
+      gltf.scene.position.x = startingPosition.x;
+      gltf.scene.position.y = startingPosition.y;
+      gltf.scene.position.z = startingPosition.z;
+
+      this.objects.push(gltf.scene);
+
+      this.internalScene.add(gltf.scene);
     }, (progress: ProgressEvent) => {
       console.log('GLTF progress => loaded = ' + progress.loaded + ', total = ' + progress.total);
     }, (e: ErrorEvent) => {
@@ -322,6 +394,9 @@ class World {
 
     if (this.objects[7]) {
       this.objects[7].position.x -= 2.5 * delta;
+    }
+    if (this.objects[8]) {
+      this.objects[8].position.x -= 2.0 * delta;
     }
   }
 

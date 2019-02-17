@@ -1,10 +1,15 @@
 import './styles/main.scss';
-import './models/gltf/tank2/tank2.gltf';
+
 import './models/gltf/tank2/tank2.bin';
+import './models/gltf/tank2/tank2.gltf';
 import './models/gltf/tank2/texture1.png';
 import './models/gltf/tank2/texture2.png';
 import './models/gltf/tank2/texture3.png';
 import './models/gltf/tank2/texture4.png';
+
+import './models/gltf/tank3/tank3-v.1.gltf';
+import './models/gltf/tank3/tank3-v.1.bin';
+import './models/gltf/tank3/target2_1.png';
 
 import { ITWindow, IAppModule, IApplicationContainer } from './interfaces';
 
@@ -122,12 +127,12 @@ function start(): void {
         lookSpeed: 50,
         movementSpeed: 1,
         camera: {
-          x: -40,
-          y: -20,
+          x: 30,
+          y: -10,
           z: 1,
           fieldOfView: 40
         },
-        theta: 70
+        theta: 270
       }
     );
 
