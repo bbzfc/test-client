@@ -4,6 +4,7 @@ import './models/gltf/tank2/tank2.bin';
 import './models/gltf/tank2/texture1.png';
 import './models/gltf/tank2/texture2.png';
 import './models/gltf/tank2/texture3.png';
+import './models/gltf/tank2/texture4.png';
 
 import { ITWindow, IAppModule, IApplicationContainer } from './interfaces';
 

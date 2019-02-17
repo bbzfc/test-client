@@ -165,6 +165,9 @@ class World {
     obj.position.y = 20;
     obj.position.z = 5;
 
+    obj.shadow.mapSize.width = 1024;
+    obj.shadow.mapSize.height = 1024;
+
     // Set the cube as the light's target.
     obj.target = this.objects[0];
 
@@ -226,63 +229,75 @@ class World {
 
     // ----------------------------------
 
-    const loader: GLTFLoader = new GLTFLoader();
-
-    loader.load('assets/tank2.gltf', (gltf: GLTF) => {
-      let gltfCamera: Object3D = null;
-      let gltfLamp: Object3D = null;
-
-      const textureLoader: TextureLoader = new TextureLoader();
-      const textureObj: Texture = textureLoader.load(
-        'assets/texture3.png'
-      );
-
-      // Do we need the below lines?
-      // textureObj.encoding = sRGBEncoding;
-      // textureObj.flipY = false;
-
-      gltf.scene.traverse((child: Object3D) => {
-        if (child.name.toLowerCase() === 'camera') {
-          gltfCamera = child;
-        } else if (child.name.toLowerCase() === 'lamp') {
-          gltfLamp = child;
-        }
-
-        if (child instanceof Mesh) {
-          (child.material as MeshStandardMaterial).map = textureObj;
-
-          // Do we need the below lines?
-          // (child.material as MeshStandardMaterial).needsUpdate = true;
-          // (child.material as MeshStandardMaterial).map.needsUpdate = true;
-        }
-      });
-
-      if (gltfCamera) {
-        gltf.scene.remove(gltfCamera);
-      }
-      if (gltfLamp) {
-        gltf.scene.remove(gltfLamp);
-      }
-
-      gltf.scene.rotateX(90 * (Math.PI / 180));
-      gltf.scene.rotateY(270 * (Math.PI / 180));
-      gltf.scene.position.x = 20;
-      gltf.scene.position.y = -5;
-      gltf.scene.position.z = -3;
-
-      this.textures.push(textureObj);
-      this.objects.push(gltf.scene);
-      this.internalScene.add(gltf.scene);
-    }, (progress: ProgressEvent) => {
-      console.log('GLTF progress => loaded = ' + progress.loaded + ', total = ' + progress.total);
-    }, (e: ErrorEvent) => {
-      console.error('GLTF error => ', e);
-    });
+    this.loadTank('assets/tank2.gltf', 'assets/texture4.png');
 
     // ----------------------------------
 
     this.objects.forEach((object: IWorldObject) => {
       this.internalScene.add(object);
+    });
+  }
+
+  private loadTank(tankModel: string, tankTexture: string): void {
+    const loader: GLTFLoader = new GLTFLoader();
+
+    loader.load(tankModel, (gltf: GLTF) => {
+      let notNeededChildren: Object3D[] = [];
+
+      const textureLoader: TextureLoader = new TextureLoader();
+      textureLoader.load(
+        tankTexture,
+        (texture: Texture) => {
+          texture.encoding = sRGBEncoding;
+          texture.flipY = false;
+          texture.needsUpdate = true;
+
+          gltf.scene.traverse((child: Mesh | Object3D) => {
+            if (
+              child instanceof Mesh &&
+              child.material instanceof MeshStandardMaterial
+            ) {
+              const childMaterial: MeshStandardMaterial = child.material;
+              childMaterial.map = texture;
+
+              childMaterial.map.encoding = sRGBEncoding;
+              childMaterial.map.needsUpdate = true;
+              childMaterial.needsUpdate = true;
+            } else {
+              notNeededChildren.push(child);
+            }
+          });
+
+          notNeededChildren.forEach((child: Object3D, idx: number) => {
+            gltf.scene.remove(child);
+
+            delete notNeededChildren[idx];
+            notNeededChildren[idx] = null;
+          });
+          notNeededChildren = [];
+
+          gltf.scene.rotateX(90 * (Math.PI / 180));
+          gltf.scene.rotateY(270 * (Math.PI / 180));
+          gltf.scene.position.x = 20;
+          gltf.scene.position.y = -5;
+          gltf.scene.position.z = -3;
+
+          this.textures.push(texture);
+          this.objects.push(gltf.scene);
+
+          this.internalScene.add(gltf.scene);
+        }, (progress: ProgressEvent) => {
+          console.log(
+            'texture progress => loaded = ' + progress.loaded + ', total = ' + progress.total
+          );
+        }, (e: ErrorEvent) => {
+          console.error('texture error => ', e);
+        }
+      );
+    }, (progress: ProgressEvent) => {
+      console.log('GLTF progress => loaded = ' + progress.loaded + ', total = ' + progress.total);
+    }, (e: ErrorEvent) => {
+      console.error('GLTF error => ', e);
     });
   }
 

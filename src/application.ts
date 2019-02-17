@@ -1,4 +1,4 @@
-import { Clock, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { Clock, PerspectiveCamera, Scene, WebGLRenderer, PCFSoftShadowMap } from 'three';
 import { Subscription } from 'rxjs';
 
 import { IApplicationOptions, IApplicationContainer } from './interfaces';
@@ -136,6 +136,9 @@ class Application {
     this.clock = new Clock();
 
     this.renderer = new WebGLRenderer({ antialias: true });
+
+    // options are THREE.BasicShadowMap | THREE.PCFShadowMap | THREE.PCFSoftShadowMap
+    this.renderer.shadowMap.type = PCFSoftShadowMap;
     this.renderer.setPixelRatio(window.devicePixelRatio);
 
     if (typeof options.threeJsRendererCanvasClass === 'string') {
