@@ -4,6 +4,7 @@ import {
   Line,
   LineBasicMaterial,
   BoxGeometry,
+  SpotLight,
   DoubleSide,
   HemisphereLight,
   Mesh,
@@ -36,6 +37,8 @@ class World {
   private materials: IWorldMaterial[];
   private objects: IWorldObject[];
   private textures: Texture[];
+
+  private uniforms: { [key: string]: any };
 
   private isInitialized: boolean;
   private isDestroyed: boolean;
@@ -114,6 +117,9 @@ class World {
 
     delete this.internalScene;
     this.internalScene = null;
+
+    delete this.uniforms;
+    this.uniforms = null;
   }
 
   private initWorldObjects(): void {
@@ -128,26 +134,30 @@ class World {
     let mat: IWorldMaterial;
     let obj: IWorldObject;
 
+    this.uniforms = {
+      scale: { type: 'f', value: 1.0 }
+    };
+
     // ----------------------------------
 
-    geo = new BoxGeometry(3, 3, 3);
-    // mat = new MeshBasicMaterial({ color: 0xff0000 });
-    mat = new ShaderMaterial({
-      uniforms: {
-        scale: { type: 'f', value: 10.0 }
-      },
-      vertexShader: document.getElementById( 'vertexShader' ).textContent,
-      fragmentShader: document.getElementById( 'fragmentShader' ).textContent
-    });
-    obj = new Mesh(geo, mat);
+    for (let i: number = 0; i <= 500; i += 1) {
+      geo = new BoxGeometry(3, 3, 3);
+      mat = new MeshBasicMaterial({ color: Math.random() * 0xffffff });
+      // mat = new ShaderMaterial({
+      //   uniforms: this.uniforms,
+      //   vertexShader: document.getElementById( 'vertexShader' ).textContent,
+      //   fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+      // });
+      obj = new Mesh(geo, mat);
 
-    obj.position.x = 5;
-    obj.position.y = -30;
-    obj.position.z = 4;
+      obj.position.x = Math.floor(Math.random() * 500) - 250;
+      obj.position.y = Math.floor(Math.random() * 500) - 250;
+      obj.position.z = Math.floor(Math.random() * 10) + 7;
 
-    this.geometries.push(geo);
-    this.materials.push(mat);
-    this.objects.push(obj);
+      this.geometries.push(geo);
+      this.materials.push(mat);
+      this.objects.push(obj);
+    }
 
     // ----------------------------------
 
@@ -157,11 +167,17 @@ class World {
 
     // ----------------------------------
 
-    geo = new PlaneBufferGeometry(1000, 1000, 10, 10);
-    mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
+    // geo = new PlaneBufferGeometry(1000, 1000, 10, 10);
+    geo = new BoxGeometry(5000, 5000, 5000);
+    // mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
+    mat = new ShaderMaterial({
+      uniforms: this.uniforms,
+      vertexShader: document.getElementById( 'vertexShader' ).textContent,
+      fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+    });
     obj = new Mesh(geo, mat);
 
-    obj.position.z = -7;
+    obj.position.z = -2505;
 
     this.geometries.push(geo);
     this.materials.push(mat);
@@ -169,27 +185,46 @@ class World {
 
     // ----------------------------------
 
-    obj = new DirectionalLight(0xffffff, 1);
+    // geo = new PlaneBufferGeometry(1000, 1000, 10, 10);
+    geo = new BoxGeometry(5000, 5000, 5000);
+    // mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
+    mat = new ShaderMaterial({
+      uniforms: this.uniforms,
+      vertexShader: document.getElementById( 'vertexShader' ).textContent,
+      fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+    });
+    obj = new Mesh(geo, mat);
 
-    obj.position.x = -20;
-    obj.position.y = 20;
-    obj.position.z = 5;
+    obj.position.z = 2600;
 
-    obj.shadow.mapSize.width = 1024;
-    obj.shadow.mapSize.height = 1024;
+    this.geometries.push(geo);
+    this.materials.push(mat);
+    this.objects.push(obj);
+
+    // ----------------------------------
+
+    // obj = new DirectionalLight(0xffffff, 1);
+    // obj = new SpotLight(0x005500, 1);
+
+    // obj.position.x = 0;
+    // obj.position.y = 0;
+    // obj.position.z = 30;
+
+    // obj.shadow.mapSize.width = 1024;
+    // obj.shadow.mapSize.height = 1024;
 
     // Set the cube as the light's target.
-    obj.target = this.objects[0];
+    // obj.target = this.objects[0];
 
-    this.objects.push(obj);
+    // this.objects.push(obj);
 
     // ----------------------------------
 
     geo = new Geometry();
     geo.vertices.push(
-      new Vector3(-1000, 0, 0),
-      new Vector3(0, 0, 0),
-      new Vector3(1000, 0, 0)
+      new Vector3(-1000, 0, -4.5),
+      new Vector3(0, 0, -4.5),
+      new Vector3(1000, 0, -4.5)
     );
     mat = new LineBasicMaterial({
       color: 0xffffff, // white
@@ -205,9 +240,9 @@ class World {
 
     geo = new Geometry();
     geo.vertices.push(
-      new Vector3(0, -1000, 0),
-      new Vector3(0, 0, 0),
-      new Vector3(0, 1000, 0)
+      new Vector3(0, -1000, -4.5),
+      new Vector3(0, 0, -4.5),
+      new Vector3(0, 1000, -4.5)
     );
     mat = new LineBasicMaterial({
       color: 0x00ff00, // green
@@ -387,16 +422,20 @@ class World {
   }
 
   private updateWorld(delta: number): void {
-    this.objects[0].translateY(2.5 * delta);
+    for (let i: number = 0; i <= 500; i += 1) {
+      this.objects[i].position.y += 0.5 * delta;
+    }
+
+    this.uniforms.scale.value += 0.6 * delta;
 
     // Uncomment the line below to lower the frame rate.
     // this.stressTest();
 
-    if (this.objects[7]) {
-      this.objects[7].position.x -= 2.5 * delta;
+    if (this.objects[507]) {
+      this.objects[507].position.x -= 2.5 * delta;
     }
-    if (this.objects[8]) {
-      this.objects[8].position.x -= 2.0 * delta;
+    if (this.objects[508]) {
+      this.objects[508].position.x -= 2.0 * delta;
     }
   }
 

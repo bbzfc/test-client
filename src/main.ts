@@ -129,8 +129,8 @@ function start(): void {
         camera: {
           x: 30,
           y: -10,
-          z: 1,
-          fieldOfView: 40
+          z: 3,
+          fieldOfView: 70
         },
         theta: 270
       }

@@ -182,9 +182,9 @@ class FirstPersonCamera {
 
     const thetaRad: number = TMath.degToRad(this.theta);
 
-    this.targetPosition.x = this.internalCamera.position.x + Math.sin(thetaRad);
-    this.targetPosition.y = this.internalCamera.position.y + Math.cos(thetaRad);
-    this.targetPosition.z = 1;
+    this.targetPosition.x = this.internalCamera.position.x + 100 * Math.sin(thetaRad);
+    this.targetPosition.y = this.internalCamera.position.y + 100 * Math.cos(thetaRad);
+    this.targetPosition.z = this.internalCamera.position.z;
 
     this.internalCamera.lookAt(this.targetPosition);
   }
