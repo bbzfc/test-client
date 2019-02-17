@@ -131,7 +131,7 @@ class World {
     // ----------------------------------
 
     geo = new BoxGeometry(3, 3, 3);
-    mat = new MeshBasicMaterial({ color: 0xff0000 });
+    // mat = new MeshBasicMaterial({ color: 0xff0000 });
     mat = new ShaderMaterial({
       uniforms: {
         scale: { type: 'f', value: 10.0 }
