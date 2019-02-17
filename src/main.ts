@@ -7,8 +7,8 @@ import './models/gltf/tank2/texture2.png';
 import './models/gltf/tank2/texture3.png';
 import './models/gltf/tank2/texture4.png';
 
-import './models/gltf/tank3/tank3-v.1.gltf';
-import './models/gltf/tank3/tank3-v.1.bin';
+import './models/gltf/tank3/tank3-v.1.1.gltf';
+import './models/gltf/tank3/tank3-v.1.1.bin';
 import './models/gltf/tank3/target2_1.png';
 
 import { ITWindow, IAppModule, IApplicationContainer } from './interfaces';

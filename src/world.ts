@@ -245,7 +245,7 @@ class World {
       new Vector3(20, -5, -3)
     );
     this.loadModel(
-      'assets/tank3-v.1.gltf',
+      'assets/tank3-v.1.1.gltf',
       new Vector3(20, -15, -3)
     );
 
