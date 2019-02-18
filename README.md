@@ -1,19 +1,21 @@
-# Three.js WebGL Playground
+# Test client for BBZFC project
 
-Quickly get going with developing a Three.js WebGL application using TypeScript & WebPack.
+Application built for demo purposes.
+Testing capabilities of [Three.js](https://github.com/mrdoob/three.js/).
+Based on the starter [valera-rozuvan/three-js-webgl-playground](https://github.com/valera-rozuvan/three-js-webgl-playground).
 
 ## Live version
 
 See a live preview of this project hosted via GitHub pages:
-[https://valera-rozuvan.github.io/three-js-webgl-playground](https://valera-rozuvan.github.io/three-js-webgl-playground).
+[https://bbzfc.github.io/test-client](https://bbzfc.github.io/test-client/dist/index.html).
 
 ## Running & Building
 
 To start hacking:
 
 ```
-git clone https://github.com/valera-rozuvan/three-js-webgl-playground
-cd ./three-js-webgl-playground
+git clone https://github.com/bbzfc/test-client
+cd ./test-client
 npm install
 npm run start
 ```
