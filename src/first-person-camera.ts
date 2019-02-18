@@ -115,8 +115,8 @@ class FirstPersonCamera {
   }
 
   public cameraLookUpdate(xPos: number, yPos: number): void {
-    this.mouseX = xPos;
-    this.mouseY = yPos;
+    // this.mouseX = xPos;
+    // this.mouseY = yPos;
   }
 
   public onMouseDown(event: MouseEvent): void {

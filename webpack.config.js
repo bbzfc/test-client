@@ -3,6 +3,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const webpack = require('webpack');
 
 const path = require('path');
 
@@ -81,8 +82,14 @@ const config = {
         viewport: 'width=device-width, initial-scale=1.0, shrink-to-fit=no',
         description: 'Test client for BBZFC project'
       }
+    }),
+    new webpack.HotModuleReplacementPlugin({
+      // Options...
     })
-  ]
+  ],
+  devServer: {
+    hot: true
+  }
 };
 
 module.exports = (env, argv) => {

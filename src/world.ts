@@ -145,24 +145,24 @@ class World {
 
     // ----------------------------------
 
-    for (let i: number = 0; i <= 500; i += 1) {
-      geo = new BoxGeometry(3, 3, 3);
-      mat = new MeshBasicMaterial({ color: Math.random() * 0xffffff });
-      // mat = new ShaderMaterial({
-      //   uniforms: this.uniforms,
-      //   vertexShader: document.getElementById( 'vertexShader' ).textContent,
-      //   fragmentShader: document.getElementById( 'fragmentShader' ).textContent
-      // });
-      obj = new Mesh(geo, mat);
+    // for (let i: number = 0; i <= 500; i += 1) {
+    //   geo = new BoxGeometry(3, 3, 3);
+    //   mat = new MeshBasicMaterial({ color: Math.random() * 0xffffff });
+    //   // mat = new ShaderMaterial({
+    //   //   uniforms: this.uniforms,
+    //   //   vertexShader: document.getElementById( 'vertexShader' ).textContent,
+    //   //   fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+    //   // });
+    //   obj = new Mesh(geo, mat);
 
-      obj.position.x = Math.floor(Math.random() * 500) - 250;
-      obj.position.y = Math.floor(Math.random() * 500) - 250;
-      obj.position.z = Math.floor(Math.random() * 10) + 7;
+    //   obj.position.x = Math.floor(Math.random() * 500) - 250;
+    //   obj.position.y = Math.floor(Math.random() * 500) - 250;
+    //   obj.position.z = Math.floor(Math.random() * 10) + 7;
 
-      this.geometries.push(geo);
-      this.materials.push(mat);
-      this.objects.push(obj);
-    }
+    //   this.geometries.push(geo);
+    //   this.materials.push(mat);
+    //   this.objects.push(obj);
+    // }
 
     // ----------------------------------
 
@@ -172,17 +172,18 @@ class World {
 
     // ----------------------------------
 
-    // geo = new PlaneBufferGeometry(1000, 1000, 10, 10);
-    geo = new BoxGeometry(5000, 5000, 5000);
-    // mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
-    mat = new ShaderMaterial({
-      uniforms: this.uniforms,
-      vertexShader: document.getElementById( 'vertexShader' ).textContent,
-      fragmentShader: document.getElementById( 'fragmentShader' ).textContent
-    });
+    geo = new PlaneBufferGeometry(1000, 1000, 10, 10);
+    // geo = new BoxGeometry(5000, 5000, 5000);
+    mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
+    // mat = new ShaderMaterial({
+    //   uniforms: this.uniforms,
+    //   vertexShader: document.getElementById( 'vertexShader' ).textContent,
+    //   fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+    // });
     obj = new Mesh(geo, mat);
 
-    obj.position.z = -2505;
+    // obj.position.z = -2505;
+    obj.position.z = -5;
 
     this.geometries.push(geo);
     this.materials.push(mat);
@@ -190,38 +191,38 @@ class World {
 
     // ----------------------------------
 
-    // geo = new PlaneBufferGeometry(1000, 1000, 10, 10);
-    geo = new BoxGeometry(5000, 5000, 5000);
-    // mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
-    mat = new ShaderMaterial({
-      uniforms: this.uniforms,
-      vertexShader: document.getElementById( 'vertexShader' ).textContent,
-      fragmentShader: document.getElementById( 'fragmentShader' ).textContent
-    });
-    obj = new Mesh(geo, mat);
+    // // geo = new PlaneBufferGeometry(1000, 1000, 10, 10);
+    // geo = new BoxGeometry(5000, 5000, 5000);
+    // // mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
+    // mat = new ShaderMaterial({
+    //   uniforms: this.uniforms,
+    //   vertexShader: document.getElementById( 'vertexShader' ).textContent,
+    //   fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+    // });
+    // obj = new Mesh(geo, mat);
 
-    obj.position.z = 2600;
+    // obj.position.z = 2600;
 
-    this.geometries.push(geo);
-    this.materials.push(mat);
-    this.objects.push(obj);
-
-    // ----------------------------------
-
-    // obj = new DirectionalLight(0xffffff, 1);
-    // obj = new SpotLight(0x005500, 1);
-
-    // obj.position.x = 0;
-    // obj.position.y = 0;
-    // obj.position.z = 30;
-
-    // obj.shadow.mapSize.width = 1024;
-    // obj.shadow.mapSize.height = 1024;
-
-    // Set the cube as the light's target.
-    // obj.target = this.objects[0];
-
+    // this.geometries.push(geo);
+    // this.materials.push(mat);
     // this.objects.push(obj);
+
+    // ----------------------------------
+
+    obj = new DirectionalLight(0xffffff, 1);
+    obj = new SpotLight(0x005500, 1);
+
+    obj.position.x = 0;
+    obj.position.y = 0;
+    obj.position.z = 30;
+
+    obj.shadow.mapSize.width = 1024;
+    obj.shadow.mapSize.height = 1024;
+
+    // Set the plane as the light's target.
+    obj.target = this.objects[1];
+
+    this.objects.push(obj);
 
     // ----------------------------------
 
@@ -279,14 +280,14 @@ class World {
 
     // ----------------------------------
 
-    this.loadModelCustomTexture(
-      'assets/tank2.gltf',
-      'assets/texture4.png',
-      new Vector3(20, -5, -3)
-    );
+    // this.loadModelCustomTexture(
+    //   'assets/tank2.gltf',
+    //   'assets/texture4.png',
+    //   new Vector3(20, -5, -3)
+    // );
     this.loadModel(
       'assets/tank3-v.1.2.gltf',
-      new Vector3(20, -15, -3)
+      new Vector3(15, -30, -3)
     );
 
     // ----------------------------------
@@ -398,7 +399,7 @@ class World {
       notNeededChildren = [];
 
       gltf.scene.rotateX(90 * (Math.PI / 180));
-      gltf.scene.rotateY(270 * (Math.PI / 180));
+      gltf.scene.rotateY(180 * (Math.PI / 180));
       gltf.scene.position.x = startingPosition.x;
       gltf.scene.position.y = startingPosition.y;
       gltf.scene.position.z = startingPosition.z;
@@ -441,11 +442,11 @@ class World {
   }
 
   private updateWorld(delta: number): void {
-    for (let i: number = 0; i <= 500; i += 1) {
-      this.objects[i].position.y += 0.5 * delta;
-    }
+    // for (let i: number = 0; i <= 500; i += 1) {
+    //   this.objects[i].position.y += 0.5 * delta;
+    // }
 
-    this.uniforms.scale.value += 0.6 * delta;
+    // this.uniforms.scale.value += 0.6 * delta;
 
     // Uncomment the line below to lower the frame rate.
     // this.stressTest();
@@ -454,12 +455,12 @@ class World {
       this.updateTankAnimation(delta);
     }
 
-    if (this.objects[507]) {
-      this.objects[507].position.x -= 2.5 * delta;
+    if (this.objects[6]) {
+      this.objects[6].position.y += 2.0 * delta;
     }
-    if (this.objects[508]) {
-      this.objects[508].position.x -= 2.0 * delta;
-    }
+    // if (this.objects[508]) {
+    //   this.objects[508].position.x -= 2.0 * delta;
+    // }
   }
 
   private stressTest(): void {
