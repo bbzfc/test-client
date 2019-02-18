@@ -7,8 +7,8 @@ import './models/gltf/tank2/texture2.png';
 import './models/gltf/tank2/texture3.png';
 import './models/gltf/tank2/texture4.png';
 
-import './models/gltf/tank3/tank3-v.1.1.gltf';
-import './models/gltf/tank3/tank3-v.1.1.bin';
+import './models/gltf/tank3/tank3-v.1.2.gltf';
+import './models/gltf/tank3/tank3-v.1.2.bin';
 import './models/gltf/tank3/target2_1.png';
 
 import { ITWindow, IAppModule, IApplicationContainer } from './interfaces';
@@ -32,7 +32,7 @@ import('three/examples/js/loaders/GLTFLoader.js');
 
 const RELOAD_APP_TIMEOUT: number = 3; // seconds
 const RELOAD_APP_FOREVER: boolean = false;
-const ENABLE_EVENT_CONSOLE_LOG: boolean = true;
+const ENABLE_EVENT_CONSOLE_LOG: boolean = false;
 
 function stop(module: IAppModule): void {
   console.log('Will attempt to destroy all...');

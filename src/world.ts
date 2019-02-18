@@ -3,7 +3,9 @@ import {
   Geometry,
   Line,
   LineBasicMaterial,
+  AnimationMixer,
   BoxGeometry,
+  AnimationAction,
   SpotLight,
   DoubleSide,
   HemisphereLight,
@@ -20,7 +22,8 @@ import {
   MeshStandardMaterial,
   TextureLoader,
   sRGBEncoding,
-  Texture
+  Texture,
+  AnimationClip
 } from 'three';
 
 import { AppEventBus } from './app-event-bus';
@@ -37,6 +40,8 @@ class World {
   private materials: IWorldMaterial[];
   private objects: IWorldObject[];
   private textures: Texture[];
+
+  updateTankAnimation: (delta: number) => void = null;
 
   private uniforms: { [key: string]: any };
 
@@ -280,7 +285,7 @@ class World {
       new Vector3(20, -5, -3)
     );
     this.loadModel(
-      'assets/tank3-v.1.1.gltf',
+      'assets/tank3-v.1.2.gltf',
       new Vector3(20, -15, -3)
     );
 
@@ -398,6 +403,20 @@ class World {
       gltf.scene.position.y = startingPosition.y;
       gltf.scene.position.z = startingPosition.z;
 
+      this.updateTankAnimation = ((): (delta: number) => void => {
+        const animations: AnimationClip[] = gltf.animations;
+        const mixer: AnimationMixer = new AnimationMixer(gltf.scene);
+        mixer.timeScale = 1.0;
+        const firstAction: AnimationAction = mixer.clipAction(animations[0]);
+        firstAction.play();
+
+        console.log(firstAction);
+
+        return (delta: number): void => {
+          mixer.update(delta);
+        };
+      })();
+
       this.objects.push(gltf.scene);
 
       this.internalScene.add(gltf.scene);
@@ -430,6 +449,10 @@ class World {
 
     // Uncomment the line below to lower the frame rate.
     // this.stressTest();
+
+    if (this.updateTankAnimation) {
+      this.updateTankAnimation(delta);
+    }
 
     if (this.objects[507]) {
       this.objects[507].position.x -= 2.5 * delta;
