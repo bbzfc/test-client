@@ -76,10 +76,10 @@ const config = {
       filename: path.join(__dirname, './dist/index.html'),
       template: path.join(__dirname, './src/index.html'),
       favicon: path.join(__dirname, './src/img/favicon.ico'),
-      title: 'Three.js WebGL Playground',
+      title: 'Test client for BBZFC project',
       meta: {
         viewport: 'width=device-width, initial-scale=1.0, shrink-to-fit=no',
-        description: 'Three.js WebGL Playground'
+        description: 'Test client for BBZFC project'
       }
     })
   ]
