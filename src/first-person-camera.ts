@@ -70,7 +70,7 @@ class FirstPersonCamera {
     if (typeof options.movementSpeed === 'number') {
       this.movementSpeed = options.movementSpeed;
     } else {
-      this.movementSpeed = 1.0;
+      this.movementSpeed = 1;
     }
 
     if (typeof options.theta === 'number') {
@@ -82,7 +82,7 @@ class FirstPersonCamera {
     if (typeof options.lookSpeed === 'number') {
       this.lookSpeed = options.lookSpeed;
     } else {
-      this.lookSpeed = 0.005;
+      this.lookSpeed = 50;
     }
 
     this.mouseX = 0;
@@ -161,7 +161,7 @@ class FirstPersonCamera {
       return;
     }
 
-    const actualMoveSpeed: number = delta * this.movementSpeed;
+    const actualMoveSpeed: number = delta * this.mouseY * this.movementSpeed;
 
     if (this.moveForward) {
       this.internalCamera.translateX(-actualMoveSpeed);
@@ -185,6 +185,11 @@ class FirstPersonCamera {
     this.targetPosition.x = this.internalCamera.position.x + 100 * Math.sin(thetaRad);
     this.targetPosition.y = this.internalCamera.position.y + 100 * Math.cos(thetaRad);
     this.targetPosition.z = this.internalCamera.position.z;
+
+    this.internalCamera.position.x += actualMoveSpeed *
+      (this.targetPosition.x - this.internalCamera.position.x);
+    this.internalCamera.position.y += actualMoveSpeed *
+      (this.targetPosition.y - this.internalCamera.position.y);
 
     this.internalCamera.lookAt(this.targetPosition);
   }

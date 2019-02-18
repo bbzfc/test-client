@@ -32,7 +32,7 @@ import('three/examples/js/loaders/GLTFLoader.js');
 
 const RELOAD_APP_TIMEOUT: number = 3; // seconds
 const RELOAD_APP_FOREVER: boolean = false;
-const ENABLE_EVENT_CONSOLE_LOG: boolean = false;
+const ENABLE_EVENT_CONSOLE_LOG: boolean = true;
 
 function stop(module: IAppModule): void {
   console.log('Will attempt to destroy all...');
