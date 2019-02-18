@@ -7,7 +7,7 @@ Based on the starter [valera-rozuvan/three-js-webgl-playground](https://github.c
 ## Live version
 
 See a live preview of this project hosted via GitHub pages:
-[https://bbzfc.github.io/test-client](https://bbzfc.github.io/test-client/dist/index.html).
+[https://bbzfc.github.io/test-client](https://bbzfc.github.io/test-client/dist/).
 
 ## Running & Building
 
