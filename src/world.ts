@@ -286,7 +286,7 @@ class World {
     //   new Vector3(20, -5, -3)
     // );
     this.loadModel(
-      'assets/tank3-v.1.2.gltf',
+      'assets/tank3-v.1.3.gltf',
       new Vector3(15, -30, -3)
     );
 
@@ -408,6 +408,7 @@ class World {
         const animations: AnimationClip[] = gltf.animations;
         const mixer: AnimationMixer = new AnimationMixer(gltf.scene);
         mixer.timeScale = 1.0;
+        console.log(animations);
         const firstAction: AnimationAction = mixer.clipAction(animations[0]);
         firstAction.play();
 
