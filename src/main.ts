@@ -1,15 +1,17 @@
 import './styles/main.scss';
 
-import './models/gltf/tank2/tank2.bin';
-import './models/gltf/tank2/tank2.gltf';
-import './models/gltf/tank2/texture1.png';
-import './models/gltf/tank2/texture2.png';
-import './models/gltf/tank2/texture3.png';
-import './models/gltf/tank2/texture4.png';
+// import './models/gltf/tank2/tank2.bin';
+// import './models/gltf/tank2/tank2.gltf';
+// import './models/gltf/tank2/texture1.png';
+// import './models/gltf/tank2/texture2.png';
+// import './models/gltf/tank2/texture3.png';
+// import './models/gltf/tank2/texture4.png';
 
-import './models/gltf/tank3/tank3-v.1.2.gltf';
-import './models/gltf/tank3/tank3-v.1.2.bin';
-import './models/gltf/tank3/target2_1.png';
+// import './models/gltf/tank3/tank3-v.1.3.gltf';
+// import './models/gltf/tank3/tank3-v.1.3.bin';
+// import './models/gltf/tank3/target2_1.png';
+import './models/gltf/vehicle1/vehicle1_v.0.1.gltf';
+import './models/gltf/vehicle1/vehicle1_v.0.1.bin';
 
 import { ITWindow, IAppModule, IApplicationContainer } from './interfaces';
 

@@ -286,8 +286,8 @@ class World {
     //   new Vector3(20, -5, -3)
     // );
     this.loadModel(
-      'assets/tank3-v.1.2.gltf',
-      new Vector3(15, -30, -3)
+      'assets/vehicle1_v.0.1.gltf',
+      new Vector3(15, -30, -0.5)
     );
 
     // ----------------------------------
@@ -409,7 +409,13 @@ class World {
         const mixer: AnimationMixer = new AnimationMixer(gltf.scene);
         mixer.timeScale = 1.0;
         const firstAction: AnimationAction = mixer.clipAction(animations[0]);
+        const secondAction: AnimationAction = mixer.clipAction(animations[1]);
+        const thirdAction: AnimationAction = mixer.clipAction(animations[2]);
+        const fourthAction: AnimationAction = mixer.clipAction(animations[3]);
         firstAction.play();
+        secondAction.play();
+        thirdAction.play();
+        fourthAction.play();
 
         console.log(firstAction);
 
