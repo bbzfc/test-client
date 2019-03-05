@@ -10,8 +10,8 @@ import './styles/main.scss';
 // import './models/gltf/tank3/tank3-v.1.3.gltf';
 // import './models/gltf/tank3/tank3-v.1.3.bin';
 // import './models/gltf/tank3/target2_1.png';
-import './models/gltf/vehicle1/vehicle1_v.0.1.gltf';
-import './models/gltf/vehicle1/vehicle1_v.0.1.bin';
+import './models/gltf/vehicle1/vehicle1_v.0.3.gltf';
+import './models/gltf/vehicle1/vehicle1_v.0.3.bin';
 
 import { ITWindow, IAppModule, IApplicationContainer } from './interfaces';
 

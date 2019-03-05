@@ -286,7 +286,7 @@ class World {
     //   new Vector3(20, -5, -3)
     // );
     this.loadModel(
-      'assets/vehicle1_v.0.1.gltf',
+      'assets/vehicle1_v.0.3.gltf',
       new Vector3(15, -30, -0.5)
     );
 
