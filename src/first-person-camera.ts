@@ -2,41 +2,49 @@ import { Subscription } from 'rxjs';
 
 import {
   PerspectiveCamera,
-  Vector3
+  Vector3,
+  MathUtils,
 } from 'three';
 
-import { Math as TMath } from 'three';
-
-import { AppEventBus } from './app-event-bus';
+import AppEventBus from './app-event-bus';
 import {
   AppEventTypeRendererGeometryUpdate,
   AppEventTypeAnimationFrame,
-  AppEventTypeCameraLook
+  AppEventTypeCameraLook,
 } from './app-events';
-import { IFirstPersonCameraOptions } from './interfaces';
+import { IFirstPersonCameraOptions, IApplicationOptionsCamera } from './interfaces';
 
-class FirstPersonCamera {
+export default class FirstPersonCamera {
   private enabled: boolean;
+
   private movementSpeed: number;
+
   private lookSpeed: number;
 
   private mouseX: number;
+
   private mouseY: number;
 
   private theta: number;
 
   private moveForward: boolean = false;
+
   private moveBackward: boolean;
+
   private moveLeft: boolean;
+
   private moveRight: boolean;
 
   private eventBus: AppEventBus;
-  private eventSubscriptions: Subscription[];
+
+  private eventSubscriptions: Subscription[] = [];
 
   private internalCamera: PerspectiveCamera;
+
   private targetPosition: Vector3;
 
   private isInitialized: boolean;
+
   private isDestroyed: boolean;
 
   constructor(eventBus: AppEventBus, options?: IFirstPersonCameraOptions) {
@@ -56,8 +64,16 @@ class FirstPersonCamera {
 
     if (options.camera) {
       ['x', 'y', 'z'].forEach((axis: string): void => {
-        if (typeof options.camera[axis] === 'number') {
-          this.internalCamera.position[axis] = options.camera[axis];
+        if (options && options.camera && typeof (options.camera as IApplicationOptionsCamera)[axis] === 'number') {
+          if (axis === 'x') {
+            this.internalCamera.position.x = options.camera.x as number;
+          }
+          if (axis === 'y') {
+            this.internalCamera.position.x = options.camera.y as number;
+          }
+          if (axis === 'z') {
+            this.internalCamera.position.x = options.camera.z as number;
+          }
         }
       });
     }
@@ -107,14 +123,12 @@ class FirstPersonCamera {
     return this.internalCamera;
   }
 
-  private handleResize(
-    appWidth: number, appHeight: number
-  ): void {
+  private handleResize(appWidth: number, appHeight: number): void {
     this.internalCamera.aspect = appWidth / appHeight;
     this.internalCamera.updateProjectionMatrix();
   }
 
-  public cameraLookUpdate(xPos: number, yPos: number): void {
+  public cameraLookUpdate(/* xPos: number, yPos: number */): void {
     // this.mouseX = xPos;
     // this.mouseY = yPos;
   }
@@ -135,7 +149,7 @@ class FirstPersonCamera {
       AppEventTypeAnimationFrame,
       (event: AppEventTypeAnimationFrame) => {
         this.update(event.payload.delta);
-      }
+      },
     );
     this.eventSubscriptions.push(subscription);
 
@@ -143,15 +157,16 @@ class FirstPersonCamera {
       AppEventTypeRendererGeometryUpdate,
       (event: AppEventTypeRendererGeometryUpdate) => {
         this.handleResize(event.payload.appWidth, event.payload.appHeight);
-      }
+      },
     );
     this.eventSubscriptions.push(subscription);
 
     subscription = this.eventBus.on(
       AppEventTypeCameraLook,
       (event: AppEventTypeCameraLook) => {
-        this.cameraLookUpdate(event.payload.xPos, event.payload.yPos);
-      }
+        console.log(event);
+        this.cameraLookUpdate(/* event.payload.xPos, event.payload.yPos */);
+      },
     );
     this.eventSubscriptions.push(subscription);
   }
@@ -180,16 +195,16 @@ class FirstPersonCamera {
     const actualLookSpeed: number = delta * this.lookSpeed;
     this.theta += this.mouseX * actualLookSpeed;
 
-    const thetaRad: number = TMath.degToRad(this.theta);
+    const thetaRad: number = MathUtils.degToRad(this.theta);
 
     this.targetPosition.x = this.internalCamera.position.x + 100 * Math.sin(thetaRad);
     this.targetPosition.y = this.internalCamera.position.y + 100 * Math.cos(thetaRad);
     this.targetPosition.z = this.internalCamera.position.z;
 
-    this.internalCamera.position.x += actualMoveSpeed *
-      (this.targetPosition.x - this.internalCamera.position.x);
-    this.internalCamera.position.y += actualMoveSpeed *
-      (this.targetPosition.y - this.internalCamera.position.y);
+    this.internalCamera.position.x += actualMoveSpeed
+      * (this.targetPosition.x - this.internalCamera.position.x);
+    this.internalCamera.position.y += actualMoveSpeed
+      * (this.targetPosition.y - this.internalCamera.position.y);
 
     this.internalCamera.lookAt(this.targetPosition);
   }
@@ -200,23 +215,23 @@ class FirstPersonCamera {
     }
     this.isDestroyed = true;
 
-    this.eventSubscriptions.forEach((subscription: Subscription, idx: number) => {
+    this.eventSubscriptions.forEach((subscription: Subscription /* idx: number */) => {
       subscription.unsubscribe();
 
-      delete this.eventSubscriptions[idx];
-      this.eventSubscriptions[idx] = null;
+      // delete this.eventSubscriptions[idx];
+      // this.eventSubscriptions[idx] = null;
     });
-    delete this.eventSubscriptions;
-    this.eventSubscriptions = null;
+    // delete this.eventSubscriptions;
+    // this.eventSubscriptions = null;
 
-    delete this.eventBus;
-    this.eventBus = null;
+    // delete this.eventBus;
+    // this.eventBus = null;
   }
 }
 
-export {
-  FirstPersonCamera
-};
+// export {
+//   FirstPersonCamera,
+// };
 
 // private onKeyUp(event: KeyboardEvent): void {
 //   switch (event.code) {

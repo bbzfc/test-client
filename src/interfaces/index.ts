@@ -4,24 +4,24 @@ import {
   IAppEventTypeKeyDownPayload,
   IAppEventTypeKeyUpPayload,
   IAppEventTypeMouseMovePayload,
-  IAppEventTypeCameraLookPayload
+  IAppEventTypeCameraLookPayload,
 } from './app-event-bus.interfaces';
 
-import { IAppModule } from './app-module.interfaces';
+import IAppModule from './app-module.interfaces';
 
 import {
   IApplicationOptions,
-  IApplicationContainer
+  IApplicationContainer,
 } from './application.interfaces';
 
 import {
   IApplicationOptionsCamera,
-  IFirstPersonCameraOptions
+  IFirstPersonCameraOptions,
 } from './first-person-camera.interfaces';
 
-import { ITWindow } from './three-window.interfaces';
+import ITWindow from './three-window.interfaces';
 
-import { IAppEventLoggerOptions } from './app-event-logger.interfaces';
+import IAppEventLoggerOptions from './app-event-logger.interfaces';
 
 import { IWorldObject, IWorldMaterial } from './world.interfaces';
 
@@ -46,5 +46,5 @@ export {
   IAppEventLoggerOptions,
 
   IWorldObject,
-  IWorldMaterial
+  IWorldMaterial,
 };

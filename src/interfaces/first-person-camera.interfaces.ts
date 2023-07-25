@@ -1,4 +1,5 @@
 interface IApplicationOptionsCamera {
+  [key: string]: number | undefined;
   fieldOfView?: number;
   x?: number;
   y?: number;
@@ -14,5 +15,5 @@ interface IFirstPersonCameraOptions {
 
 export {
   IApplicationOptionsCamera,
-  IFirstPersonCameraOptions
+  IFirstPersonCameraOptions,
 };

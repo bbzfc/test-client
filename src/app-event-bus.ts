@@ -6,10 +6,11 @@ import { AppEventTypes } from './app-events';
 type CallbackFunction<T = AppEventTypes> = (event: T) => void;
 type NewableType<T> = new (...args: any[]) => T;
 
-export class AppEventBus {
+export default class AppEventBus {
   private eventStream: Subject<any>;
 
   private isInitialized: boolean;
+
   private isDestroyed: boolean;
 
   constructor() {
@@ -26,15 +27,11 @@ export class AppEventBus {
   public on<T>(
     typeFilter: NewableType<T>,
     callback: CallbackFunction<T>,
-    callbackContext: any = null
+    callbackContext: any = null,
   ): Subscription {
-
     const subscription: Subscription = this.eventStream
       .pipe(
-        filter((event: any): boolean => {
-            return (event instanceof typeFilter);
-          }
-        )
+        filter((event: any): boolean => (event instanceof typeFilter)),
       )
       .subscribe((event: T): void => {
         try {
@@ -49,19 +46,16 @@ export class AppEventBus {
 
   public subscribe(
     callback: CallbackFunction,
-    callbackContext: any = null
+    callbackContext: any = null,
   ): Subscription {
-
     const subscription: Subscription = this.eventStream.subscribe(
       (event: any): void => {
-
         try {
           callback.call(callbackContext, event);
         } catch (error) {
           console.log(error);
         }
-
-      }
+      },
     );
 
     return subscription;
@@ -75,7 +69,7 @@ export class AppEventBus {
 
     this.eventStream.complete();
 
-    delete this.eventStream;
-    this.eventStream = null;
+    // delete this.eventStream;
+    // this.eventStream = undefined;
   }
 }

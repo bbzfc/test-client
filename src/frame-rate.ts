@@ -1,16 +1,18 @@
-import * as Stats from 'stats.js';
+import * as Stats from 'stats-js';
 import { Subscription } from 'rxjs';
 
-import { AppEventBus } from './app-event-bus';
+import AppEventBus from './app-event-bus';
 import { AppEventTypeAnimationFrame } from './app-events';
 
-class FrameRate {
+export default class FrameRate {
   private eventBus: AppEventBus;
-  private eventSubscriptions: Subscription[];
+
+  private eventSubscriptions: Subscription[] = [];
 
   private stats: Stats;
 
   private isInitialized: boolean;
+
   private isDestroyed: boolean;
 
   constructor(eventBus: AppEventBus) {
@@ -36,18 +38,18 @@ class FrameRate {
     this.eventSubscriptions.forEach((subscription: Subscription, idx: number) => {
       subscription.unsubscribe();
       delete this.eventSubscriptions[idx];
-      this.eventSubscriptions[idx] = null;
+      // this.eventSubscriptions[idx] = null;
     });
-    delete this.eventSubscriptions;
-    this.eventSubscriptions = null;
+    this.eventSubscriptions = [];
+    // this.eventSubscriptions = null;
 
-    delete this.eventBus;
-    this.eventBus = null;
+    // delete this.eventBus;
+    // this.eventBus = null;
 
     document.body.removeChild(this.stats.dom);
 
-    delete this.stats;
-    this.stats = null;
+    // this.stats = [];
+    // this.stats = null;
   }
 
   private initEventSubscriptions(): void {
@@ -57,7 +59,7 @@ class FrameRate {
       AppEventTypeAnimationFrame,
       () => {
         this.updateFrameRate();
-      }
+      },
     );
     this.eventSubscriptions.push(subscription);
   }
@@ -69,7 +71,3 @@ class FrameRate {
     this.stats.begin();
   }
 }
-
-export {
-  FrameRate
-};

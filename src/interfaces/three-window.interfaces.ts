@@ -1,7 +1,3 @@
-interface ITWindow extends Window {
+export default interface ITWindow extends Window {
   THREE: any;
-}
-
-export {
-  ITWindow
-};
+};;;;;;;;;;;

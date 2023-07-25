@@ -1,51 +1,52 @@
 import { Subscription } from 'rxjs';
 import {
-  Geometry,
-  Line,
-  LineBasicMaterial,
+  // Line,
+  // LineBasicMaterial,
   AnimationMixer,
   BoxGeometry,
   AnimationAction,
   SpotLight,
-  DoubleSide,
+  // DoubleSide,
   HemisphereLight,
   Mesh,
-  MeshBasicMaterial,
-  ShaderMaterial,
-  PlaneBufferGeometry,
+  // MeshBasicMaterial,
+  BufferGeometry,
   Scene,
-  GLTFLoader,
   DirectionalLight,
   Object3D,
   Vector3,
-  GLTF,
   MeshStandardMaterial,
   TextureLoader,
   sRGBEncoding,
   Texture,
-  AnimationClip
 } from 'three';
+import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-import { AppEventBus } from './app-event-bus';
+import AppEventBus from './app-event-bus';
 import { AppEventTypeAnimationFrame } from './app-events';
 import { IWorldObject, IWorldMaterial } from './interfaces';
 
-class World {
-  private internalScene: Scene;
+export default class World {
+  private internalScene: Scene | undefined;
 
   private eventBus: AppEventBus;
-  private eventSubscriptions: Subscription[];
 
-  private geometries: Array<BoxGeometry | Geometry | PlaneBufferGeometry>;
-  private materials: IWorldMaterial[];
-  private objects: IWorldObject[];
-  private textures: Texture[];
+  private eventSubscriptions: Subscription[] = [];
 
-  updateTankAnimation: (delta: number) => void = null;
+  private geometries: Array<BoxGeometry | BufferGeometry> = [];
 
-  private uniforms: { [key: string]: any };
+  private materials: IWorldMaterial[] = [];
+
+  private objects: Array<any> = [];
+
+  private textures: Texture[] = [];
+
+  updateTankAnimation: ((delta: number) => void) | null = null;
+
+  private uniforms: { [key: string]: any } = {};
 
   private isInitialized: boolean;
+
   private isDestroyed: boolean;
 
   constructor(eventBus: AppEventBus) {
@@ -59,7 +60,7 @@ class World {
   }
 
   public get scene(): Scene {
-    return this.internalScene;
+    return this.internalScene as Scene;
   }
 
   public destroy(): void {
@@ -72,59 +73,57 @@ class World {
       subscription.unsubscribe();
 
       delete this.eventSubscriptions[idx];
-      this.eventSubscriptions[idx] = null;
+      // this.eventSubscriptions[idx] = undefined;
     });
-    delete this.eventSubscriptions;
-    this.eventSubscriptions = null;
+    this.eventSubscriptions = [];
+    // this.eventSubscriptions = null;
 
-    delete this.eventBus;
-    this.eventBus = null;
+    // delete this.eventBus;
+    // this.eventBus = null;
 
     this.objects.forEach((object: IWorldObject, idx: number) => {
-      this.internalScene.remove(object);
+      this.internalScene?.remove(object);
 
       delete this.objects[idx];
-      this.objects[idx] = null;
+      // this.objects[idx] = null;
     });
-    delete this.objects;
-    this.objects = null;
+    this.objects = [];
+    // this.objects = null;
 
     this.geometries.forEach(
-      (geometry: BoxGeometry | Geometry | PlaneBufferGeometry, idx: number) => {
+      (geometry: BoxGeometry | BufferGeometry, idx: number) => {
+        geometry.dispose();
 
-      geometry.dispose();
-
-      delete this.geometries[idx];
-      this.geometries[idx] = null;
-
-      }
+        delete this.geometries[idx];
+        // this.geometries[idx] = null;
+      },
     );
-    delete this.geometries;
-    this.geometries = null;
+    this.geometries = [];
+    // this.geometries = null;
 
     this.textures.forEach((texture: Texture, idx: number) => {
       texture.dispose();
 
       delete this.textures[idx];
-      this.textures[idx] = null;
+      // this.textures[idx] = null;
     });
-    delete this.textures;
-    this.textures = null;
+    this.textures = [];
+    // this.textures = null;
 
     this.materials.forEach((material: IWorldMaterial, idx: number) => {
       material.dispose();
 
       delete this.materials[idx];
-      this.materials[idx] = null;
+      // this.materials[idx] = null;
     });
-    delete this.materials;
-    this.materials = null;
+    this.materials = [];
+    // this.materials = null;
 
     delete this.internalScene;
-    this.internalScene = null;
+    // this.internalScene = null;
 
-    delete this.uniforms;
-    this.uniforms = null;
+    this.uniforms = [];
+    // this.uniforms = null;
   }
 
   private initWorldObjects(): void {
@@ -135,12 +134,12 @@ class World {
     this.objects = [];
     this.textures = [];
 
-    let geo: BoxGeometry | PlaneBufferGeometry | Geometry;
-    let mat: IWorldMaterial;
+    // let geo: BoxGeometry | BufferGeometry;
+    // let mat: IWorldMaterial;
     let obj: IWorldObject;
 
     this.uniforms = {
-      scale: { type: 'f', value: 1.0 }
+      scale: { type: 'f', value: 1.0 },
     };
 
     // ----------------------------------
@@ -172,22 +171,22 @@ class World {
 
     // ----------------------------------
 
-    geo = new PlaneBufferGeometry(1000, 1000, 10, 10);
+    // geo = new PlaneBufferGeometry(1000, 1000, 10, 10);
     // geo = new BoxGeometry(5000, 5000, 5000);
-    mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
+    // mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
     // mat = new ShaderMaterial({
     //   uniforms: this.uniforms,
     //   vertexShader: document.getElementById( 'vertexShader' ).textContent,
     //   fragmentShader: document.getElementById( 'fragmentShader' ).textContent
     // });
-    obj = new Mesh(geo, mat);
+    // obj = new Mesh(geo, mat);
 
     // obj.position.z = -2505;
-    obj.position.z = -5;
+    // obj.position.z = -5;
 
-    this.geometries.push(geo);
-    this.materials.push(mat);
-    this.objects.push(obj);
+    // this.geometries.push(geo);
+    // this.materials.push(mat);
+    // this.objects.push(obj);
 
     // ----------------------------------
 
@@ -226,57 +225,66 @@ class World {
 
     // ----------------------------------
 
+    /*
+    // Geometry() is deprecated!
     geo = new Geometry();
     geo.vertices.push(
       new Vector3(-1000, 0, -4.5),
       new Vector3(0, 0, -4.5),
-      new Vector3(1000, 0, -4.5)
+      new Vector3(1000, 0, -4.5),
     );
     mat = new LineBasicMaterial({
       color: 0xffffff, // white
-      linewidth: 3
+      linewidth: 3,
     });
     obj = new Line(geo, mat);
 
     this.geometries.push(geo);
     this.materials.push(mat);
     this.objects.push(obj);
+    */
 
     // ----------------------------------
 
+    /*
+    // Geometry() is deprecated!
     geo = new Geometry();
     geo.vertices.push(
       new Vector3(0, -1000, -4.5),
       new Vector3(0, 0, -4.5),
-      new Vector3(0, 1000, -4.5)
+      new Vector3(0, 1000, -4.5),
     );
     mat = new LineBasicMaterial({
       color: 0x00ff00, // green
-      linewidth: 3
+      linewidth: 3,
     });
     obj = new Line(geo, mat);
 
     this.geometries.push(geo);
     this.materials.push(mat);
     this.objects.push(obj);
+    */
 
     // ----------------------------------
 
+    /*
+    // Geometry() is deprecated!
     geo = new Geometry();
     geo.vertices.push(
       new Vector3(0, 0, -1000),
       new Vector3(0, 0, 0),
-      new Vector3(0, 0, 1000)
+      new Vector3(0, 0, 1000),
     );
     mat = new LineBasicMaterial({
       color: 0x800080, // purple
-      linewidth: 3
+      linewidth: 3,
     });
     obj = new Line(geo, mat);
 
     this.geometries.push(geo);
     this.materials.push(mat);
     this.objects.push(obj);
+    */
 
     // ----------------------------------
 
@@ -287,20 +295,20 @@ class World {
     // );
     this.loadModel(
       'assets/tank3-v.1.2.gltf',
-      new Vector3(15, -30, -3)
+      new Vector3(15, -30, -3),
     );
 
     // ----------------------------------
 
     this.objects.forEach((object: IWorldObject) => {
-      this.internalScene.add(object);
+      this.internalScene?.add(object);
     });
   }
 
   private loadModelCustomTexture(
     tankModel: string,
     tankTexture: string,
-    startingPosition: Vector3
+    startingPosition: Vector3,
   ): void {
     const loader: GLTFLoader = new GLTFLoader();
 
@@ -317,17 +325,17 @@ class World {
 
           gltf.scene.traverse((child: Mesh | Object3D) => {
             if (
-              child.name.toLowerCase().includes('camera') ||
-              child.name.toLowerCase().includes('scene') ||
-              child.name.toLowerCase().includes('light')
+              child.name.toLowerCase().includes('camera')
+              || child.name.toLowerCase().includes('scene')
+              || child.name.toLowerCase().includes('light')
             ) {
               notNeededChildren.push(child);
               return;
             }
 
             if (
-              child instanceof Mesh &&
-              child.material instanceof MeshStandardMaterial
+              child instanceof Mesh
+              && child.material instanceof MeshStandardMaterial
             ) {
               const childMaterial: MeshStandardMaterial = child.material;
               childMaterial.map = texture;
@@ -342,7 +350,7 @@ class World {
             gltf.scene.remove(child);
 
             delete notNeededChildren[idx];
-            notNeededChildren[idx] = null;
+            // notNeededChildren[idx] = null;
           });
           notNeededChildren = [];
 
@@ -355,17 +363,19 @@ class World {
           this.textures.push(texture);
           this.objects.push(gltf.scene);
 
-          this.internalScene.add(gltf.scene);
-        }, (progress: ProgressEvent) => {
+          this.internalScene?.add(gltf.scene);
+        },
+        (progress: ProgressEvent) => {
           console.log(
-            'texture progress => loaded = ' + progress.loaded + ', total = ' + progress.total
+            `texture progress => loaded = ${progress.loaded}, total = ${progress.total}`,
           );
-        }, (e: ErrorEvent) => {
+        },
+        (e: ErrorEvent) => {
           console.error('texture error => ', e);
-        }
+        },
       );
     }, (progress: ProgressEvent) => {
-      console.log('GLTF progress => loaded = ' + progress.loaded + ', total = ' + progress.total);
+      console.log(`GLTF progress => loaded = ${progress.loaded}, total = ${progress.total}`);
     }, (e: ErrorEvent) => {
       console.error('GLTF error => ', e);
     });
@@ -373,18 +383,18 @@ class World {
 
   private loadModel(
     tankModel: string,
-    startingPosition: Vector3
+    startingPosition: Vector3,
   ): void {
     const loader: GLTFLoader = new GLTFLoader();
 
-    loader.load(tankModel, (gltf: GLTF) => {
+    loader.load(tankModel, (gltf) => {
       let notNeededChildren: Object3D[] = [];
 
       gltf.scene.traverse((child: Mesh | Object3D) => {
         if (
-          child.name.toLowerCase().includes('camera') ||
-          child.name.toLowerCase().includes('scene') ||
-          child.name.toLowerCase().includes('light')
+          child.name.toLowerCase().includes('camera')
+          || child.name.toLowerCase().includes('scene')
+          || child.name.toLowerCase().includes('light')
         ) {
           notNeededChildren.push(child);
         }
@@ -394,7 +404,7 @@ class World {
         gltf.scene.remove(child);
 
         delete notNeededChildren[idx];
-        notNeededChildren[idx] = null;
+        // notNeededChildren[idx] = null;
       });
       notNeededChildren = [];
 
@@ -405,7 +415,7 @@ class World {
       gltf.scene.position.z = startingPosition.z;
 
       this.updateTankAnimation = ((): (delta: number) => void => {
-        const animations: AnimationClip[] = gltf.animations;
+        const { animations } = gltf;
         const mixer: AnimationMixer = new AnimationMixer(gltf.scene);
         mixer.timeScale = 1.0;
         const firstAction: AnimationAction = mixer.clipAction(animations[0]);
@@ -420,9 +430,9 @@ class World {
 
       this.objects.push(gltf.scene);
 
-      this.internalScene.add(gltf.scene);
+      this.internalScene?.add(gltf.scene);
     }, (progress: ProgressEvent) => {
-      console.log('GLTF progress => loaded = ' + progress.loaded + ', total = ' + progress.total);
+      console.log(`GLTF progress => loaded = ${progress.loaded}, total = ${progress.total}`);
     }, (e: ErrorEvent) => {
       console.error('GLTF error => ', e);
     });
@@ -435,7 +445,7 @@ class World {
       AppEventTypeAnimationFrame,
       (event: AppEventTypeAnimationFrame) => {
         this.updateWorld(event.payload.delta);
-      }
+      },
     );
 
     this.eventSubscriptions.push(subscription);
@@ -473,7 +483,3 @@ class World {
     console.log(b);
   }
 }
-
-export {
-  World
-};

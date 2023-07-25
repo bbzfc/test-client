@@ -33,5 +33,5 @@ export {
   IAppEventTypeKeyDownPayload,
   IAppEventTypeKeyUpPayload,
   IAppEventTypeMouseMovePayload,
-  IAppEventTypeCameraLookPayload
+  IAppEventTypeCameraLookPayload,
 };

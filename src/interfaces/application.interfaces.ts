@@ -7,5 +7,5 @@ interface IApplicationOptions {
 
 export {
   IApplicationOptions,
-  IApplicationContainer
+  IApplicationContainer,
 };
