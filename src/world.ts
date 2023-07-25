@@ -53,6 +53,8 @@ export default class World {
 
   private isDestroyed: boolean;
 
+  xDirection: (1 | -1) = 1;
+
   constructor(eventBus: AppEventBus) {
     this.eventBus = eventBus;
 
@@ -518,8 +520,45 @@ export default class World {
     }
 
     if (this.objects[6]) {
-      this.objects[6].position.y += 2.0 * delta;
+      const tank: IWorldObject = this.objects[6];
+
+      const centerX: number = 0; // Adjust this value to change the center along the x-axis
+      const centerY: number = -15; // Adjust this value to change the center along the y-axis
+
+      // Define the radius of the circular path
+      const radius: number = 15; // Adjust this value to change the radius of the circle
+
+      // Calculate the current angle of the tank in radians
+      let angle: number = Math.atan2(tank.position.y - centerY, tank.position.x - centerX);
+
+      // Increment the angle to make the tank move around the circle
+      angle += 1 * (Math.PI / 180);
+
+      // Calculate the new x and y positions based on the updated angle and radius
+      const newX: number = centerX + radius * Math.cos(angle);
+      const newY: number = centerY + radius * Math.sin(angle);
+
+      // Update the tank's position
+      tank.position.x = newX;
+      tank.position.y = newY;
+
+      tank.rotateY(1 * (Math.PI / 180));
     }
+
+    if (this.objects[7]) {
+      if (this.objects[7].position.x < -20) {
+        this.xDirection = -1;
+        this.objects[7].rotateY(Math.PI);
+      }
+
+      if (this.objects[7].position.x > 20) {
+        this.xDirection = 1;
+        this.objects[7].rotateY(Math.PI);
+      }
+
+      this.objects[7].position.x -= this.xDirection * 8 * delta;
+    }
+
     // if (this.objects[508]) {
     //   this.objects[508].position.x -= 2.0 * delta;
     // }
