@@ -14,17 +14,17 @@ import {
 } from './app-events';
 
 export default class Application {
-  private clock: Clock | null = null;
+  private clock?: Clock | null = null;
 
-  private internalScene: Scene | null = null;
+  private internalScene?: Scene | null = null;
 
-  private internalCamera: PerspectiveCamera | null = null;
+  private internalCamera?: PerspectiveCamera | null = null;
 
-  public renderer: WebGLRenderer | null = null;
+  public renderer?: WebGLRenderer | null = null;
 
   private eventBus: AppEventBus;
 
-  private eventSubscriptions: Subscription[] = [];
+  private eventSubscriptions: Array<Subscription | null> | null = null;
 
   private rendererReadyP: Promise<void>;
 
@@ -69,9 +69,9 @@ export default class Application {
     return this.rendererReadyP;
   }
 
-  public get canvasEl(): HTMLCanvasElement {
-    return this.renderer?.domElement as HTMLCanvasElement;
-  }
+  // public get canvasEl(): HTMLCanvasElement {
+  //   return this.renderer?.domElement as HTMLCanvasElement;
+  // }
 
   public set camera(newCamera: PerspectiveCamera) {
     this.internalCamera = newCamera;
@@ -85,32 +85,47 @@ export default class Application {
     if (this.isInitialized !== true || this.isDestroyed === true) {
       return;
     }
-    this.isDestroyed = true;
 
-    this.eventSubscriptions.forEach((subscription: Subscription, idx: number) => {
-      subscription.unsubscribe();
-      delete this.eventSubscriptions[idx];
-      // this.eventSubscriptions[idx] = null;
-    });
-    this.eventSubscriptions = [];
-    // this.eventSubscriptions = null;
+    if (this.eventSubscriptions) {
+      this.eventSubscriptions.forEach((subscription: Subscription | null, idx: number) => {
+        if (!this.eventSubscriptions || !subscription) {
+          return;
+        }
 
-    this.clock = null;
-    this.internalScene = null;
-    this.internalCamera = null;
+        subscription.unsubscribe();
 
-    this.clock = null;
-    this.internalScene = null;
-    this.internalCamera = null;
+        delete this.eventSubscriptions[idx];
+        this.eventSubscriptions[idx] = null;
+      });
 
-    if (this.appContainer === document) {
-      document.body.removeChild(this.renderer?.domElement as HTMLCanvasElement);
-    } else {
-      this.appContainer?.removeChild(this.renderer?.domElement as HTMLCanvasElement);
+      this.eventSubscriptions = null;
     }
 
-    this.renderer?.dispose();
-    this.renderer = null;
+    delete this.clock;
+    this.clock = null;
+
+    delete this.internalScene;
+    this.internalScene = null;
+
+    delete this.internalCamera;
+    this.internalCamera = null;
+
+    if (this.renderer) {
+      if (this.renderer.domElement) {
+        if (this.appContainer === document) {
+          document.body.removeChild(this.renderer.domElement);
+        } else if (this.appContainer) {
+          this.appContainer.removeChild(this.renderer.domElement);
+        }
+      }
+
+      this.renderer.dispose();
+
+      delete this.renderer;
+      this.renderer = null;
+    }
+
+    this.isDestroyed = true;
   }
 
   public start(): void {
@@ -158,8 +173,8 @@ export default class Application {
 
     if (this.appContainer === document) {
       document.body.appendChild(this.renderer.domElement);
-    } else {
-      this.appContainer?.appendChild(this.renderer.domElement);
+    } else if (this.appContainer) {
+      this.appContainer.appendChild(this.renderer.domElement);
     }
   }
 
@@ -249,6 +264,7 @@ export default class Application {
       return;
     }
 
+    // debugger;
     this.renderer?.render(this.internalScene as Scene, this.internalCamera as PerspectiveCamera);
 
     requestAnimationFrame((): void => {

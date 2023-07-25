@@ -1,10 +1,12 @@
 import AppEventBus from './app-event-bus';
 import { AppEventTypeWindowResize } from './app-events';
 
-export default class WindowResizer {
+type TResizeListener = () => void;
+
+export default class WindowResizeHandler {
   private eventBus: AppEventBus;
 
-  private resizeListener: (() => void) | null;
+  private resizeListener?: TResizeListener | null;
 
   private isInitialized: boolean;
 
@@ -27,12 +29,13 @@ export default class WindowResizer {
     if (this.isInitialized !== true || this.isDestroyed === true) {
       return;
     }
-    this.isDestroyed = true;
 
-    window.removeEventListener('resize', this.resizeListener as () => void);
+    window.removeEventListener('resize', this.resizeListener as TResizeListener);
 
-    // delete this.resizeListener;
+    delete this.resizeListener;
     this.resizeListener = null;
+
+    this.isDestroyed = true;
   }
 
   public emit(): void {

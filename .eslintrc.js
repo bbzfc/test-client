@@ -41,6 +41,7 @@ module.exports = {
     'typescript-eslint/no-unused-vars': 'off',
     'prefer-destructuring': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
+    'no-unused-expressions': 'off',
     semi: 'off',
   },
   settings: {

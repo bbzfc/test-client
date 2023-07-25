@@ -5,7 +5,7 @@ import {
   AppEventTypeKeyUp,
 } from './app-events';
 
-export default class KeyboarInput {
+export default class KeyboardInput {
   private eventBus: AppEventBus;
 
   private appContainer: IApplicationContainer;

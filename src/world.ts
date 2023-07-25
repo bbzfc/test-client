@@ -1,18 +1,21 @@
 import { Subscription } from 'rxjs';
 import {
-  // Line,
-  // LineBasicMaterial,
+  Line,
+  LineBasicMaterial,
   AnimationMixer,
   BoxGeometry,
   AnimationAction,
   SpotLight,
-  // DoubleSide,
+  DoubleSide,
   HemisphereLight,
   Mesh,
-  // MeshBasicMaterial,
+  MeshBasicMaterial,
+  ShaderMaterial,
+  BufferAttribute,
   BufferGeometry,
   Scene,
   DirectionalLight,
+  PlaneGeometry,
   Object3D,
   Vector3,
   MeshStandardMaterial,
@@ -134,8 +137,10 @@ export default class World {
     this.objects = [];
     this.textures = [];
 
-    // let geo: BoxGeometry | BufferGeometry;
-    // let mat: IWorldMaterial;
+    let geo: BoxGeometry | BufferGeometry;
+    let mat: IWorldMaterial;
+    let vertices: Float32Array;
+
     let obj: IWorldObject;
 
     this.uniforms = {
@@ -144,24 +149,24 @@ export default class World {
 
     // ----------------------------------
 
-    // for (let i: number = 0; i <= 500; i += 1) {
-    //   geo = new BoxGeometry(3, 3, 3);
-    //   mat = new MeshBasicMaterial({ color: Math.random() * 0xffffff });
-    //   // mat = new ShaderMaterial({
-    //   //   uniforms: this.uniforms,
-    //   //   vertexShader: document.getElementById( 'vertexShader' ).textContent,
-    //   //   fragmentShader: document.getElementById( 'fragmentShader' ).textContent
-    //   // });
-    //   obj = new Mesh(geo, mat);
+    for (let i: number = 0; i <= 500; i += 1) {
+      geo = new BoxGeometry(3, 3, 3);
+      mat = new MeshBasicMaterial({ color: Math.random() * 0xffffff });
+      // mat = new ShaderMaterial({
+      //   uniforms: this.uniforms,
+      //   vertexShader: (document.getElementById('vertexShader') as HTMLElement).textContent as string,
+      //   fragmentShader: (document.getElementById('fragmentShader') as HTMLElement).textContent as string,
+      // });
+      obj = new Mesh(geo, mat);
 
-    //   obj.position.x = Math.floor(Math.random() * 500) - 250;
-    //   obj.position.y = Math.floor(Math.random() * 500) - 250;
-    //   obj.position.z = Math.floor(Math.random() * 10) + 7;
+      obj.position.x = Math.floor(Math.random() * 500) - 250;
+      obj.position.y = Math.floor(Math.random() * 500) - 250;
+      obj.position.z = Math.floor(Math.random() * 10) + 7;
 
-    //   this.geometries.push(geo);
-    //   this.materials.push(mat);
-    //   this.objects.push(obj);
-    // }
+      this.geometries.push(geo);
+      this.materials.push(mat);
+      this.objects.push(obj);
+    }
 
     // ----------------------------------
 
@@ -171,40 +176,40 @@ export default class World {
 
     // ----------------------------------
 
-    // geo = new PlaneBufferGeometry(1000, 1000, 10, 10);
-    // geo = new BoxGeometry(5000, 5000, 5000);
-    // mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
-    // mat = new ShaderMaterial({
-    //   uniforms: this.uniforms,
-    //   vertexShader: document.getElementById( 'vertexShader' ).textContent,
-    //   fragmentShader: document.getElementById( 'fragmentShader' ).textContent
-    // });
-    // obj = new Mesh(geo, mat);
+    geo = new PlaneGeometry(1000, 1000, 10, 10);
+    geo = new BoxGeometry(5000, 5000, 5000);
+    mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
+    mat = new ShaderMaterial({
+      uniforms: this.uniforms,
+      vertexShader: (document.getElementById('vertexShader') as HTMLElement).textContent as string,
+      fragmentShader: (document.getElementById('fragmentShader') as HTMLElement).textContent as string,
+    });
+    obj = new Mesh(geo, mat);
 
-    // obj.position.z = -2505;
-    // obj.position.z = -5;
+    obj.position.z = -2505;
+    obj.position.z = -5;
 
-    // this.geometries.push(geo);
-    // this.materials.push(mat);
-    // this.objects.push(obj);
+    this.geometries.push(geo);
+    this.materials.push(mat);
+    this.objects.push(obj);
 
     // ----------------------------------
 
-    // // geo = new PlaneBufferGeometry(1000, 1000, 10, 10);
-    // geo = new BoxGeometry(5000, 5000, 5000);
-    // // mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
-    // mat = new ShaderMaterial({
-    //   uniforms: this.uniforms,
-    //   vertexShader: document.getElementById( 'vertexShader' ).textContent,
-    //   fragmentShader: document.getElementById( 'fragmentShader' ).textContent
-    // });
-    // obj = new Mesh(geo, mat);
+    geo = new PlaneGeometry(1000, 1000, 10, 10);
+    geo = new BoxGeometry(5000, 5000, 5000);
+    mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
+    mat = new ShaderMaterial({
+      uniforms: this.uniforms,
+      vertexShader: (document.getElementById('vertexShader') as HTMLElement).textContent as string,
+      fragmentShader: (document.getElementById('fragmentShader') as HTMLElement).textContent as string,
+    });
+    obj = new Mesh(geo, mat);
 
-    // obj.position.z = 2600;
+    obj.position.z = 2600;
 
-    // this.geometries.push(geo);
-    // this.materials.push(mat);
-    // this.objects.push(obj);
+    this.geometries.push(geo);
+    this.materials.push(mat);
+    this.objects.push(obj);
 
     // ----------------------------------
 
@@ -225,14 +230,30 @@ export default class World {
 
     // ----------------------------------
 
-    /*
     // Geometry() is deprecated!
-    geo = new Geometry();
-    geo.vertices.push(
-      new Vector3(-1000, 0, -4.5),
-      new Vector3(0, 0, -4.5),
-      new Vector3(1000, 0, -4.5),
+    // geo = new Geometry();
+    // geo.vertices.push(
+    //   new Vector3(-1000, 0, -4.5),
+    //   new Vector3(0, 0, -4.5),
+    //   new Vector3(1000, 0, -4.5),
+    // );
+
+    geo = new BufferGeometry();
+    vertices = new Float32Array([
+      -1000, 0, -4.5,
+      0, 0, -4.5,
+      1000, 0, -4.5,
+    ]);
+
+    // specify triangles, as triplets of indexes into the vertex list.
+    geo.setIndex([0, 1, 2]);
+
+    // specify vertex positions
+    geo.setAttribute(
+      'position',
+      new BufferAttribute(vertices, 3),
     );
+
     mat = new LineBasicMaterial({
       color: 0xffffff, // white
       linewidth: 3,
@@ -242,18 +263,33 @@ export default class World {
     this.geometries.push(geo);
     this.materials.push(mat);
     this.objects.push(obj);
-    */
 
     // ----------------------------------
 
-    /*
     // Geometry() is deprecated!
-    geo = new Geometry();
-    geo.vertices.push(
-      new Vector3(0, -1000, -4.5),
-      new Vector3(0, 0, -4.5),
-      new Vector3(0, 1000, -4.5),
+    // geo = new Geometry();
+    // geo.vertices.push(
+    //   new Vector3(0, -1000, -4.5),
+    //   new Vector3(0, 0, -4.5),
+    //   new Vector3(0, 1000, -4.5),
+    // );
+
+    geo = new BufferGeometry();
+    vertices = new Float32Array([
+      0, -1000, -4.5,
+      0, 0, -4.5,
+      0, 1000, -4.5,
+    ]);
+
+    // specify triangles, as triplets of indexes into the vertex list.
+    geo.setIndex([0, 1, 2]);
+
+    // specify vertex positions
+    geo.setAttribute(
+      'position',
+      new BufferAttribute(vertices, 3),
     );
+
     mat = new LineBasicMaterial({
       color: 0x00ff00, // green
       linewidth: 3,
@@ -263,18 +299,33 @@ export default class World {
     this.geometries.push(geo);
     this.materials.push(mat);
     this.objects.push(obj);
-    */
 
     // ----------------------------------
 
-    /*
     // Geometry() is deprecated!
-    geo = new Geometry();
-    geo.vertices.push(
-      new Vector3(0, 0, -1000),
-      new Vector3(0, 0, 0),
-      new Vector3(0, 0, 1000),
+    // geo = new Geometry();
+    // geo.vertices.push(
+    //   new Vector3(0, 0, -1000),
+    //   new Vector3(0, 0, 0),
+    //   new Vector3(0, 0, 1000),
+    // );
+
+    geo = new BufferGeometry();
+    vertices = new Float32Array([
+      0, 0, -1000,
+      0, 0, 0,
+      0, 0, 1000,
+    ]);
+
+    // specify triangles, as triplets of indexes into the vertex list.
+    geo.setIndex([0, 1, 2]);
+
+    // specify vertex positions
+    geo.setAttribute(
+      'position',
+      new BufferAttribute(vertices, 3),
     );
+
     mat = new LineBasicMaterial({
       color: 0x800080, // purple
       linewidth: 3,
@@ -284,7 +335,6 @@ export default class World {
     this.geometries.push(geo);
     this.materials.push(mat);
     this.objects.push(obj);
-    */
 
     // ----------------------------------
 
@@ -293,10 +343,10 @@ export default class World {
     //   'assets/texture4.png',
     //   new Vector3(20, -5, -3)
     // );
-    this.loadModel(
-      'assets/tank3-v.1.2.gltf',
-      new Vector3(15, -30, -3),
-    );
+    // this.loadModel(
+    //   'assets/tank3-v.1.2.gltf',
+    //   new Vector3(15, -30, -3),
+    // );
 
     // ----------------------------------
 

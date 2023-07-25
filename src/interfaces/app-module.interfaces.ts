@@ -1,5 +1,5 @@
 import AppEventBus from '../app-event-bus';
-import WindowResizer from '../window-resizer';
+import WindowResizeHandler from '../window-resize-handler';
 import Application from '../application';
 import Controls from '../controls';
 import World from '../world';
@@ -11,7 +11,7 @@ import AppEventLogger from '../app-event-logger';
 
 export default interface IAppModule {
   eventBus?: AppEventBus;
-  windowResizer?: WindowResizer;
+  windowResizeHandler?: WindowResizeHandler;
   app?: Application;
   controls?: Controls;
   world?: World;

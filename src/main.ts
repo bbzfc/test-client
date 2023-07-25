@@ -7,26 +7,26 @@ import * as THREE from 'three';
 
 import './styles/main.scss';
 
-import './models/gltf/tank2/tank2.bin';
-import './models/gltf/tank2/tank2.gltf';
-import './models/gltf/tank2/texture1.png';
-import './models/gltf/tank2/texture2.png';
-import './models/gltf/tank2/texture3.png';
-import './models/gltf/tank2/texture4.png';
+// import './models/gltf/tank2/tank2.bin';
+// import './models/gltf/tank2/tank2.gltf';
+// import './models/gltf/tank2/texture1.png';
+// import './models/gltf/tank2/texture2.png';
+// import './models/gltf/tank2/texture3.png';
+// import './models/gltf/tank2/texture4.png';
 
-import './models/gltf/tank3/tank3-v.1.2.gltf';
-import './models/gltf/tank3/tank3-v.1.2.bin';
-import './models/gltf/tank3/target2_1.png';
+// import './models/gltf/tank3/tank3-v.1.2.gltf';
+// import './models/gltf/tank3/tank3-v.1.2.bin';
+// import './models/gltf/tank3/target2_1.png';
 
 import { ITWindow, IAppModule, IApplicationContainer } from './interfaces';
 
 import AppEventBus from './app-event-bus';
-import WindowResizer from './window-resizer';
+import WindowResizeHandler from './window-resize-handler';
 import Application from './application';
 import Controls from './controls';
 import World from './world';
 import FirstPersonCamera from './first-person-camera';
-import KeyboarInput from './keyboard-input';
+import KeyboardInput from './keyboard-input';
 import MouseInput from './mouse-input';
 import FrameRate from './frame-rate';
 import AppEventLogger from './app-event-logger';
@@ -37,31 +37,27 @@ const RELOAD_APP_TIMEOUT: number = 3; // seconds
 const RELOAD_APP_FOREVER: boolean = false;
 const ENABLE_EVENT_CONSOLE_LOG: boolean = false;
 
+function noop() {}
+
 function stop(module: IAppModule): void {
   console.log('Will attempt to destroy all...');
 
-  if (!module.app) {
-    return;
-  }
-
   // Stop the animation loop.
-  module.app.pause();
+  (module.app) ? module.app.pause() : noop();
 
-  module.world?.destroy();
-  module.controls?.destroy();
-  module.fpCamera?.destroy();
-  module.app.destroy();
-  module.frameRate?.destroy();
-  module.keyboardInput?.destroy();
-  module.mouseInput?.destroy();
-  module.windowResizer?.destroy();
+  // Call the destructor for each available module instance.
+  (module.world) ? module.world.destroy() : noop();
+  (module.controls) ? module.controls.destroy() : noop();
+  (module.fpCamera) ? module.fpCamera.destroy() : noop();
+  (module.app) ? module.app.destroy() : noop();
+  (module.frameRate) ? module.frameRate.destroy() : noop();
+  (module.keyboardInput) ? module.keyboardInput.destroy() : noop();
+  (module.mouseInput) ? module.mouseInput.destroy() : noop();
+  (module.windowResizeHandler) ? module.windowResizeHandler.destroy() : noop();
+  (module.appEventLogger) ? module.appEventLogger.destroy() : noop();
+  (module.eventBus) ? module.eventBus.destroy() : noop();
 
-  if (typeof ENABLE_EVENT_CONSOLE_LOG === 'boolean' && ENABLE_EVENT_CONSOLE_LOG) {
-    module.appEventLogger?.destroy();
-  }
-
-  module.eventBus?.destroy();
-
+  // Clear up memory.
   delete module.world;
   module.world = undefined;
 
@@ -77,33 +73,32 @@ function stop(module: IAppModule): void {
   delete module.frameRate;
   module.frameRate = undefined;
 
-  delete module.mouseInput;
-  module.mouseInput = undefined;
-
   delete module.keyboardInput;
   module.keyboardInput = undefined;
 
-  delete module.windowResizer;
-  module.windowResizer = undefined;
+  delete module.mouseInput;
+  module.mouseInput = undefined;
 
-  if (typeof ENABLE_EVENT_CONSOLE_LOG === 'boolean' && ENABLE_EVENT_CONSOLE_LOG) {
-    delete module.appEventLogger;
-    module.appEventLogger = undefined;
-  }
+  delete module.windowResizeHandler;
+  module.windowResizeHandler = undefined;
+
+  delete module.appEventLogger;
+  module.appEventLogger = undefined;
 
   delete module.eventBus;
   module.eventBus = undefined;
 
+  // We are done!
   console.log('Done!');
 }
 
-function start(): void {
-  const module: IAppModule = {};
+function start(_module: IAppModule | null): IAppModule {
+  const module: IAppModule = _module || {};
   const appContainer: IApplicationContainer = document.getElementById('app-container') as HTMLElement;
 
   module.eventBus = new AppEventBus();
 
-  if (typeof ENABLE_EVENT_CONSOLE_LOG === 'boolean' && ENABLE_EVENT_CONSOLE_LOG) {
+  if (ENABLE_EVENT_CONSOLE_LOG) {
     module.appEventLogger = new AppEventLogger(
       module.eventBus,
       {
@@ -112,8 +107,8 @@ function start(): void {
     );
   }
 
-  module.windowResizer = new WindowResizer(module.eventBus);
-  module.keyboardInput = new KeyboarInput(module.eventBus, appContainer, true);
+  module.windowResizeHandler = new WindowResizeHandler(module.eventBus);
+  module.keyboardInput = new KeyboardInput(module.eventBus, appContainer, true);
   module.mouseInput = new MouseInput(module.eventBus, appContainer, true);
   module.frameRate = new FrameRate(module.eventBus);
 
@@ -127,7 +122,10 @@ function start(): void {
 
   module.app.rendererReady().then(() => {
     if (!module.app) {
-      return;
+      throw new Error('You should have initialized `module.app` before this line.');
+    }
+    if (!module.windowResizeHandler) {
+      throw new Error('You should have initialized `module.windowResizeHandler` before this line.');
     }
 
     module.controls = new Controls(module.eventBus as AppEventBus);
@@ -150,23 +148,31 @@ function start(): void {
     // Set up things for the `animate` loop to work properly.
     module.app.camera = module.fpCamera.camera;
     module.app.scene = module.world.scene;
-    module.windowResizer?.emit();
+
+    // Simulate a window resize event s oas to resize the app accordingly to latest window size.
+    // This is to make sure everything is sane, and the app fits completely inside the window from frame 1.
+    module.windowResizeHandler.emit();
 
     // Start the animation loop.
     module.app.start();
-
-    if (typeof RELOAD_APP_FOREVER === 'boolean' && RELOAD_APP_FOREVER) {
-      window.setTimeout(() => {
-        stop(module);
-      }, RELOAD_APP_TIMEOUT * 1000);
-    }
   });
+
+  return module;
 }
 
-start();
+const module = start(null);
 
-if (typeof RELOAD_APP_FOREVER === 'boolean' && RELOAD_APP_FOREVER) {
+// Useful for testing memory leaks.
+// The way you use it:
+//   1. set `RELOAD_APP_FOREVER` to `true`
+//   2. load application in browser
+//   3. open and observe browser memory profile
+//   4. over 30-60 minutes the application will restart enough times
+//   5. If all is OK, the application memory usage should not grow over time.
+if (RELOAD_APP_FOREVER) {
   window.setInterval(() => {
-    start();
-  }, (RELOAD_APP_TIMEOUT + 1) * 1000);
+    stop(module);
+
+    start(module);
+  }, (RELOAD_APP_TIMEOUT) * 1000);
 }
