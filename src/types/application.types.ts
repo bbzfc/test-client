@@ -1,4 +1,4 @@
-type IApplicationContainer = HTMLDocument | HTMLElement;
+type IApplicationContainer = Document | HTMLElement;
 
 interface IApplicationOptions {
   appContainer?: IApplicationContainer;

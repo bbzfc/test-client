@@ -1,3 +1,5 @@
+import { MOVEMENT_DIRECTION } from './control.types';
+
 interface IAppEventTypeAnimationFramePayload {
   delta: number;
 }
@@ -22,6 +24,14 @@ interface IAppEventTypeMouseMovePayload {
   mouseY: number;
 }
 
+interface IAppEventTypePlayerStartMovementPayload {
+  direction: MOVEMENT_DIRECTION;
+}
+
+interface IAppEventTypePlayerStopMovementPayload {
+  direction: MOVEMENT_DIRECTION;
+}
+
 interface IAppEventTypeCameraLookPayload {
   xPos: number;
   yPos: number;
@@ -33,5 +43,7 @@ export {
   IAppEventTypeKeyDownPayload,
   IAppEventTypeKeyUpPayload,
   IAppEventTypeMouseMovePayload,
+  IAppEventTypePlayerStartMovementPayload,
+  IAppEventTypePlayerStopMovementPayload,
   IAppEventTypeCameraLookPayload,
 };

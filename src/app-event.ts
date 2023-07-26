@@ -4,8 +4,10 @@ import {
   IAppEventTypeKeyDownPayload,
   IAppEventTypeKeyUpPayload,
   IAppEventTypeMouseMovePayload,
+  IAppEventTypePlayerStartMovementPayload,
+  IAppEventTypePlayerStopMovementPayload,
   IAppEventTypeCameraLookPayload,
-} from './interfaces';
+} from './types';
 
 abstract class AppEvent {
   public readonly type: string = '';
@@ -72,6 +74,18 @@ export class AppEventTypeMouseMove extends AppEventWithPayload<IAppEventTypeMous
   public readonly type: string = AppEventTypeMouseMove.type;
 }
 
+export class AppEventTypePlayerStartMovement extends AppEventWithPayload<IAppEventTypePlayerStartMovementPayload> {
+  static readonly type: string = 'AppEventTypePlayerStartMovement';
+
+  public readonly type: string = AppEventTypePlayerStartMovement.type;
+}
+
+export class AppEventTypePlayerStopMovement extends AppEventWithPayload<IAppEventTypePlayerStopMovementPayload> {
+  static readonly type: string = 'AppEventTypePlayerStopMovement';
+
+  public readonly type: string = AppEventTypePlayerStopMovement.type;
+}
+
 export class AppEventTypeCameraLook extends AppEventWithPayload<IAppEventTypeCameraLookPayload> {
   static readonly type: string = 'AppEventTypeCameraLook';
 
@@ -87,4 +101,6 @@ export type AppEventTypes =
   AppEventTypeMouseDown |
   AppEventTypeMouseUp |
   AppEventTypeMouseMove |
+  AppEventTypePlayerStartMovement |
+  AppEventTypePlayerStopMovement |
   AppEventTypeCameraLook;

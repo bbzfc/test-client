@@ -1,5 +1,5 @@
 import AppEventBus from './app-event-bus';
-import { AppEventTypeWindowResize } from './app-events';
+import { AppEventTypeWindowResize } from './app-event';
 
 type TResizeListener = () => void;
 

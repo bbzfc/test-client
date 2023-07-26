@@ -4,26 +4,33 @@ import {
   IAppEventTypeKeyDownPayload,
   IAppEventTypeKeyUpPayload,
   IAppEventTypeMouseMovePayload,
+  IAppEventTypePlayerStartMovementPayload,
+  IAppEventTypePlayerStopMovementPayload,
   IAppEventTypeCameraLookPayload,
-} from './app-event-bus.interfaces';
+} from './app-event-bus.types';
 
-import IAppModule from './app-module.interfaces';
+import IAppModule from './app-module.types';
 
 import {
   IApplicationOptions,
   IApplicationContainer,
-} from './application.interfaces';
+} from './application.types';
 
 import {
   IApplicationOptionsCamera,
   IFirstPersonCameraOptions,
-} from './first-person-camera.interfaces';
+} from './first-person-camera.types';
 
-import ITWindow from './three-window.interfaces';
+import ITWindow from './three-window.types';
 
-import IAppEventLoggerOptions from './app-event-logger.interfaces';
+import IAppEventLoggerOptions from './app-event-logger.types';
 
-import { IWorldObject, IWorldMaterial } from './world.interfaces';
+import { IWorldObject, IWorldMaterial } from './world.types';
+
+import {
+  MOVEMENT_DIRECTION,
+  LOOK_DIRECTION,
+} from './control.types';
 
 export {
   IAppEventTypeAnimationFramePayload,
@@ -31,6 +38,8 @@ export {
   IAppEventTypeKeyDownPayload,
   IAppEventTypeKeyUpPayload,
   IAppEventTypeMouseMovePayload,
+  IAppEventTypePlayerStartMovementPayload,
+  IAppEventTypePlayerStopMovementPayload,
   IAppEventTypeCameraLookPayload,
 
   IAppModule,
@@ -47,4 +56,7 @@ export {
 
   IWorldObject,
   IWorldMaterial,
+
+  MOVEMENT_DIRECTION,
+  LOOK_DIRECTION,
 };

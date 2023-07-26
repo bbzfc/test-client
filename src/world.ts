@@ -5,17 +5,13 @@ import {
   AnimationMixer,
   BoxGeometry,
   AnimationAction,
-  SpotLight,
   DoubleSide,
-  HemisphereLight,
   Mesh,
   MeshBasicMaterial,
-  ShaderMaterial,
   BufferAttribute,
   BufferGeometry,
   Scene,
   DirectionalLight,
-  PlaneGeometry,
   Object3D,
   Vector3,
   MeshStandardMaterial,
@@ -27,8 +23,12 @@ import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import { ASSETS_BASE_URL } from './env-variables';
 import AppEventBus from './app-event-bus';
-import { AppEventTypeAnimationFrame } from './app-events';
-import { IWorldObject, IWorldMaterial } from './interfaces';
+import {
+  AppEventTypeAnimationFrame,
+  AppEventTypePlayerStartMovement,
+  AppEventTypePlayerStopMovement,
+} from './app-event';
+import { IWorldObject, IWorldMaterial, MOVEMENT_DIRECTION } from './types';
 
 export default class World {
   private internalScene: Scene | undefined;
@@ -45,9 +45,13 @@ export default class World {
 
   private textures: Texture[] = [];
 
+  private playerMovement: {
+    [key: string]: null | undefined | boolean;
+  } = {};
+
   updateTankAnimation: ((delta: number) => void) | null = null;
 
-  private uniforms: { [key: string]: any } = {};
+  // private uniforms: { [key: string]: any } = {};
 
   private isInitialized: boolean;
 
@@ -56,8 +60,6 @@ export default class World {
   private playerOneObjPtr: IWorldObject | null = null;
 
   private playerTwoObjPtr: IWorldObject | null = null;
-
-  xDirection: (1 | -1) = 1;
 
   constructor(eventBus: AppEventBus) {
     this.eventBus = eventBus;
@@ -77,7 +79,6 @@ export default class World {
     if (this.isInitialized !== true || this.isDestroyed === true) {
       return;
     }
-    this.isDestroyed = true;
 
     this.eventSubscriptions.forEach((subscription: Subscription, idx: number) => {
       subscription.unsubscribe();
@@ -132,8 +133,10 @@ export default class World {
     delete this.internalScene;
     // this.internalScene = null;
 
-    this.uniforms = [];
+    // this.uniforms = [];
     // this.uniforms = null;
+
+    this.isDestroyed = true;
   }
 
   private initWorldObjects(): void {
@@ -152,9 +155,9 @@ export default class World {
 
     let groundObjPtr: IWorldObject | null = null;
 
-    this.uniforms = {
-      scale: { type: 'f', value: 1.0 },
-    };
+    // this.uniforms = {
+    //   scale: { type: 'f', value: 1.0 },
+    // };
 
     // ----------------------------------
     // Create a lot of random boxes - floating high in the sky.
@@ -509,15 +512,78 @@ export default class World {
   }
 
   private initEventSubscriptions(): void {
+    let subscription: Subscription;
+
     this.eventSubscriptions = [];
 
-    const subscription: Subscription = this.eventBus.on(
+    subscription = this.eventBus.on(
       AppEventTypeAnimationFrame,
       (event: AppEventTypeAnimationFrame) => {
         this.updateWorld(event.payload.delta);
       },
     );
+    this.eventSubscriptions.push(subscription);
 
+    subscription = this.eventBus.on(
+      AppEventTypePlayerStartMovement,
+      (event: AppEventTypePlayerStartMovement) => {
+        switch (event.payload.direction) {
+          case MOVEMENT_DIRECTION.forward:
+            if (this.playerMovement[MOVEMENT_DIRECTION.backward]) {
+              this.playerMovement[MOVEMENT_DIRECTION.backward] = null;
+            }
+            this.playerMovement[MOVEMENT_DIRECTION.forward] = true;
+            break;
+          case MOVEMENT_DIRECTION.backward:
+            if (this.playerMovement[MOVEMENT_DIRECTION.forward]) {
+              this.playerMovement[MOVEMENT_DIRECTION.forward] = null;
+            }
+            this.playerMovement[MOVEMENT_DIRECTION.backward] = true;
+            break;
+          case MOVEMENT_DIRECTION.left:
+            if (this.playerMovement[MOVEMENT_DIRECTION.right]) {
+              this.playerMovement[MOVEMENT_DIRECTION.right] = null;
+            }
+            this.playerMovement[MOVEMENT_DIRECTION.left] = true;
+            break;
+          case MOVEMENT_DIRECTION.right:
+            if (this.playerMovement[MOVEMENT_DIRECTION.left]) {
+              this.playerMovement[MOVEMENT_DIRECTION.left] = null;
+            }
+            this.playerMovement[MOVEMENT_DIRECTION.right] = true;
+            break;
+          default:
+            break;
+        }
+      },
+    );
+    this.eventSubscriptions.push(subscription);
+
+    subscription = this.eventBus.on(
+      AppEventTypePlayerStopMovement,
+      (event: AppEventTypePlayerStopMovement) => {
+        switch (event.payload.direction) {
+          case MOVEMENT_DIRECTION.forward:
+            this.playerMovement[MOVEMENT_DIRECTION.backward] = null;
+            this.playerMovement[MOVEMENT_DIRECTION.forward] = null;
+            break;
+          case MOVEMENT_DIRECTION.backward:
+            this.playerMovement[MOVEMENT_DIRECTION.backward] = null;
+            this.playerMovement[MOVEMENT_DIRECTION.forward] = null;
+            break;
+          case MOVEMENT_DIRECTION.left:
+            this.playerMovement[MOVEMENT_DIRECTION.left] = null;
+            this.playerMovement[MOVEMENT_DIRECTION.right] = null;
+            break;
+          case MOVEMENT_DIRECTION.right:
+            this.playerMovement[MOVEMENT_DIRECTION.left] = null;
+            this.playerMovement[MOVEMENT_DIRECTION.right] = null;
+            break;
+          default:
+            break;
+        }
+      },
+    );
     this.eventSubscriptions.push(subscription);
   }
 
@@ -564,31 +630,32 @@ export default class World {
     if (this.playerTwoObjPtr) {
       const tank2: IWorldObject = this.playerTwoObjPtr;
 
-      if (tank2.position.x < -20) {
-        this.xDirection = -1;
-        tank2.rotateY(Math.PI);
+      if (this.playerMovement[MOVEMENT_DIRECTION.forward]) {
+        tank2.position.x -= 8 * delta;
+      } else if (this.playerMovement[MOVEMENT_DIRECTION.backward]) {
+        tank2.position.x += 8 * delta;
       }
 
-      if (tank2.position.x > 20) {
-        this.xDirection = 1;
-        tank2.rotateY(Math.PI);
+      if (this.playerMovement[MOVEMENT_DIRECTION.left]) {
+        tank2.position.y -= 8 * delta;
+      } else if (this.playerMovement[MOVEMENT_DIRECTION.right]) {
+        tank2.position.y += 8 * delta;
       }
-
-      tank2.position.x -= this.xDirection * 8 * delta;
     }
-
-    // if (this.objects[508]) {
-    //   this.objects[508].position.x -= 2.0 * delta;
-    // }
   }
 
-  private stressTest(): void {
-    const M: number = 0.5 * 1000 * 1000;
-    const N: number = Math.floor(Math.random() * M);
-    const a: number[] = Array.from(Array(N).keys())
-      .map((i: number) => Math.random() * i * (1 / N));
-    const b: number = a.reduce((p: number, n: number) => p + n);
+  // private stressTest(): void {
+  //   for (let j = 0; j <= 3; j += 1) {
+  //     const lower = Math.random() * 1000;
+  //     const upper = lower + Math.random() * 1000;
 
-    console.log(b);
-  }
+  //     const M: number = 0.5 * lower * upper;
+  //     const N: number = Math.floor(Math.random() * M);
+  //     const a: number[] = Array.from(Array(N).keys())
+  //       .map((i: number) => Math.random() * i * (1 / N));
+  //     const b: number = a.reduce((p: number, n: number) => p + n);
+
+  //     console.log(b);
+  //   }
+  // }
 }

@@ -1,6 +1,6 @@
 import { Subscription } from 'rxjs';
 
-import { IAppEventLoggerOptions } from './interfaces';
+import { IAppEventLoggerOptions } from './types';
 import AppEventBus from './app-event-bus';
 import {
   AppEventTypes,
@@ -14,14 +14,14 @@ import {
   AppEventTypeMouseUp,
   AppEventTypeMouseMove,
   AppEventTypeCameraLook,
-} from './app-events';
+} from './app-event';
 
 export default class AppEventLogger {
-  private eventBus: AppEventBus;
+  private eventBus?: AppEventBus | null = null;
 
-  private eventSubscriptions: Subscription[] = [];
+  private eventSubscriptions?: Array<Subscription | null> | null = null;
 
-  private options: IAppEventLoggerOptions = {};
+  private options?: IAppEventLoggerOptions | null = null;
 
   private isInitialized: boolean;
 
@@ -45,10 +45,11 @@ export default class AppEventLogger {
     if (this.isInitialized !== true || this.isDestroyed === true) {
       return;
     }
-    this.isDestroyed = true;
 
     this.freeEventSubscriptions();
     this.destroyProperties();
+
+    this.isDestroyed = true;
   }
 
   private setupOptionsObject(options: IAppEventLoggerOptions): void {
@@ -74,29 +75,45 @@ export default class AppEventLogger {
   }
 
   private freeEventSubscriptions(): void {
-    this.eventSubscriptions.forEach((subscription: Subscription, idx: number) => {
-      subscription.unsubscribe();
+    if (!this.eventSubscriptions) {
+      return;
+    }
 
-      delete this.eventSubscriptions[idx];
-      // this.eventSubscriptions[idx] = null;
+    this.eventSubscriptions.forEach((subscription: Subscription | null, idx: number) => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+
+      if (this.eventSubscriptions) {
+        delete this.eventSubscriptions[idx];
+        this.eventSubscriptions[idx] = null;
+      }
     });
   }
 
   private destroyProperties(): void {
-    // delete this.eventBus;
-    // this.eventBus = null;
+    delete this.eventBus;
+    this.eventBus = null;
 
-    // delete this.eventSubscriptions;
-    // this.eventSubscriptions = null;
+    delete this.eventSubscriptions;
+    this.eventSubscriptions = null;
 
-    // delete this.options;
-    // this.options = null;
+    delete this.options;
+    this.options = null;
   }
 
   private initEventSubscriptions(): void {
+    if (!this.eventBus) {
+      throw new Error('can not run func initEventSubscriptions() : eventBus is not initialized');
+    }
+
     this.eventSubscriptions = [];
 
     const subscription: Subscription = this.eventBus.subscribe((event: AppEventTypes) => {
+      if (!this.options) {
+        throw new Error('can not run func initEventSubscriptions() : options is not initialized');
+      }
+
       if (
         this.options.animationFrame && event instanceof AppEventTypeAnimationFrame
       ) {
