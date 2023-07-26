@@ -20,11 +20,12 @@ import {
   Vector3,
   MeshStandardMaterial,
   TextureLoader,
-  sRGBEncoding,
+  SRGBColorSpace,
   Texture,
 } from 'three';
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
+import { ASSETS_BASE_URL } from './env-variables';
 import AppEventBus from './app-event-bus';
 import { AppEventTypeAnimationFrame } from './app-events';
 import { IWorldObject, IWorldMaterial } from './interfaces';
@@ -143,11 +144,14 @@ export default class World {
 
     let obj: IWorldObject;
 
+    let groundObjPtr: IWorldObject | null = null;
+
     this.uniforms = {
       scale: { type: 'f', value: 1.0 },
     };
 
     // ----------------------------------
+    // Create a lot of random boxes - floating high in the sky.
 
     for (let i: number = 0; i <= 500; i += 1) {
       geo = new BoxGeometry(3, 3, 3);
@@ -169,40 +173,43 @@ export default class World {
     }
 
     // ----------------------------------
+    // Create a Hemisphere Light - general lighting.
 
-    obj = new HemisphereLight(0xeeeeee, 0x121212, 1);
-
-    this.objects.push(obj);
+    // obj = new HemisphereLight(0xeeeeee, 0x121212, 1);
+    // this.objects.push(obj);
 
     // ----------------------------------
+    // Create a platform - ground - for tanks to drive on.
 
-    geo = new PlaneGeometry(1000, 1000, 10, 10);
+    // geo = new PlaneGeometry(1000, 1000, 10, 10);
     geo = new BoxGeometry(5000, 5000, 5000);
     mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
-    mat = new ShaderMaterial({
-      uniforms: this.uniforms,
-      vertexShader: (document.getElementById('vertexShader') as HTMLElement).textContent as string,
-      fragmentShader: (document.getElementById('fragmentShader') as HTMLElement).textContent as string,
-    });
+    // mat = new ShaderMaterial({
+    //   uniforms: this.uniforms,
+    //   vertexShader: (document.getElementById('vertexShader') as HTMLElement).textContent as string,
+    //   fragmentShader: (document.getElementById('fragmentShader') as HTMLElement).textContent as string,
+    // });
     obj = new Mesh(geo, mat);
 
     obj.position.z = -2505;
-    obj.position.z = -5;
 
     this.geometries.push(geo);
     this.materials.push(mat);
     this.objects.push(obj);
 
-    // ----------------------------------
+    groundObjPtr = this.objects[this.objects.length - 1];
 
-    geo = new PlaneGeometry(1000, 1000, 10, 10);
+    // ----------------------------------
+    // Create a sky.
+
+    // geo = new PlaneGeometry(1000, 1000, 10, 10);
     geo = new BoxGeometry(5000, 5000, 5000);
-    mat = new MeshBasicMaterial({ color: 0xaaaaaa, side: DoubleSide });
-    mat = new ShaderMaterial({
-      uniforms: this.uniforms,
-      vertexShader: (document.getElementById('vertexShader') as HTMLElement).textContent as string,
-      fragmentShader: (document.getElementById('fragmentShader') as HTMLElement).textContent as string,
-    });
+    mat = new MeshBasicMaterial({ color: 0x23aaaa, side: DoubleSide });
+    // mat = new ShaderMaterial({
+    //   uniforms: this.uniforms,
+    //   vertexShader: (document.getElementById('vertexShader') as HTMLElement).textContent as string,
+    //   fragmentShader: (document.getElementById('fragmentShader') as HTMLElement).textContent as string,
+    // });
     obj = new Mesh(geo, mat);
 
     obj.position.z = 2600;
@@ -212,31 +219,40 @@ export default class World {
     this.objects.push(obj);
 
     // ----------------------------------
+    // Create a Directional Light.
 
     obj = new DirectionalLight(0xffffff, 1);
-    obj = new SpotLight(0x005500, 1);
 
-    obj.position.x = 0;
-    obj.position.y = 0;
-    obj.position.z = 30;
+    obj.position.x = 50;
+    obj.position.y = -10;
+    obj.position.z = 1;
+
+    // Set the ground plane as the light's target.
+    obj.target = groundObjPtr as IWorldObject;
+
+    this.objects.push(obj);
+
+    // ----------------------------------
+    // Create a Spot Light.
+
+    /*
+    obj = new SpotLight(0xffffff, 1, 10);
+
+    obj.position.x = 50;
+    obj.position.y = -10;
+    obj.position.z = 1;
 
     obj.shadow.mapSize.width = 1024;
     obj.shadow.mapSize.height = 1024;
 
     // Set the plane as the light's target.
-    obj.target = this.objects[1];
+    obj.target = groundObjPtr as IWorldObject;
 
     this.objects.push(obj);
+    */
 
     // ----------------------------------
-
-    // Geometry() is deprecated!
-    // geo = new Geometry();
-    // geo.vertices.push(
-    //   new Vector3(-1000, 0, -4.5),
-    //   new Vector3(0, 0, -4.5),
-    //   new Vector3(1000, 0, -4.5),
-    // );
+    // Create the white `X` axis.
 
     geo = new BufferGeometry();
     vertices = new Float32Array([
@@ -265,14 +281,7 @@ export default class World {
     this.objects.push(obj);
 
     // ----------------------------------
-
-    // Geometry() is deprecated!
-    // geo = new Geometry();
-    // geo.vertices.push(
-    //   new Vector3(0, -1000, -4.5),
-    //   new Vector3(0, 0, -4.5),
-    //   new Vector3(0, 1000, -4.5),
-    // );
+    // Create the green `Y` axis.
 
     geo = new BufferGeometry();
     vertices = new Float32Array([
@@ -301,14 +310,7 @@ export default class World {
     this.objects.push(obj);
 
     // ----------------------------------
-
-    // Geometry() is deprecated!
-    // geo = new Geometry();
-    // geo.vertices.push(
-    //   new Vector3(0, 0, -1000),
-    //   new Vector3(0, 0, 0),
-    //   new Vector3(0, 0, 1000),
-    // );
+    // Create the purple `Z` axis.
 
     geo = new BufferGeometry();
     vertices = new Float32Array([
@@ -338,15 +340,15 @@ export default class World {
 
     // ----------------------------------
 
-    // this.loadModelCustomTexture(
-    //   'assets/tank2.gltf',
-    //   'assets/texture4.png',
-    //   new Vector3(20, -5, -3)
-    // );
-    // this.loadModel(
-    //   'assets/tank3-v.1.2.gltf',
-    //   new Vector3(15, -30, -3),
-    // );
+    this.loadModelCustomTexture(
+      `${ASSETS_BASE_URL}/tank2/tank2.gltf`,
+      `${ASSETS_BASE_URL}/tank2/texture4.png`,
+      new Vector3(20, -5, -3),
+    );
+    this.loadModel(
+      `${ASSETS_BASE_URL}/tank3/tank3-v.1.2.gltf`,
+      new Vector3(15, -30, -3),
+    );
 
     // ----------------------------------
 
@@ -369,7 +371,7 @@ export default class World {
       textureLoader.load(
         tankTexture,
         (texture: Texture) => {
-          texture.encoding = sRGBEncoding;
+          texture.colorSpace = SRGBColorSpace;
           texture.flipY = false;
           texture.needsUpdate = true;
 
@@ -390,7 +392,7 @@ export default class World {
               const childMaterial: MeshStandardMaterial = child.material;
               childMaterial.map = texture;
 
-              childMaterial.map.encoding = sRGBEncoding;
+              childMaterial.map.colorSpace = SRGBColorSpace;
               childMaterial.map.needsUpdate = true;
               childMaterial.needsUpdate = true;
             }
@@ -502,9 +504,9 @@ export default class World {
   }
 
   private updateWorld(delta: number): void {
-    // for (let i: number = 0; i <= 500; i += 1) {
-    //   this.objects[i].position.y += 0.5 * delta;
-    // }
+    for (let i: number = 0; i <= 500; i += 1) {
+      this.objects[i].position.y += 0.5 * delta;
+    }
 
     // this.uniforms.scale.value += 0.6 * delta;
 

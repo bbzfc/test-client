@@ -61,6 +61,7 @@ export default class FirstPersonCamera {
     }
 
     this.internalCamera = new PerspectiveCamera(cameraFieldOfView, 1);
+    this.internalCamera.updateProjectionMatrix();
 
     if (options.camera) {
       ['x', 'y', 'z'].forEach((axis: string): void => {
@@ -69,10 +70,10 @@ export default class FirstPersonCamera {
             this.internalCamera.position.x = options.camera.x as number;
           }
           if (axis === 'y') {
-            this.internalCamera.position.x = options.camera.y as number;
+            this.internalCamera.position.y = options.camera.y as number;
           }
           if (axis === 'z') {
-            this.internalCamera.position.x = options.camera.z as number;
+            this.internalCamera.position.z = options.camera.z as number;
           }
         }
       });
@@ -128,9 +129,9 @@ export default class FirstPersonCamera {
     this.internalCamera.updateProjectionMatrix();
   }
 
-  public cameraLookUpdate(/* xPos: number, yPos: number */): void {
-    // this.mouseX = xPos;
-    // this.mouseY = yPos;
+  public cameraLookUpdate(xPos: number, yPos: number): void {
+    this.mouseX = xPos;
+    this.mouseY = yPos;
   }
 
   public onMouseDown(event: MouseEvent): void {
@@ -164,8 +165,8 @@ export default class FirstPersonCamera {
     subscription = this.eventBus.on(
       AppEventTypeCameraLook,
       (event: AppEventTypeCameraLook) => {
-        console.log(event);
-        this.cameraLookUpdate(/* event.payload.xPos, event.payload.yPos */);
+        // console.log(event);
+        this.cameraLookUpdate(event.payload.xPos, event.payload.yPos);
       },
     );
     this.eventSubscriptions.push(subscription);

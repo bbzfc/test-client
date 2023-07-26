@@ -1,41 +1,31 @@
-// Enable working with `GLTFLoader`. Right now it can't be simply imported
-// as a TypeScript module. So we have this hack ;)
-
-import * as THREE from 'three';
-
+// Enable working with `GLTFLoader`.
+// Right now it can't be simply imported as a TypeScript module.
+// So we have this hack ;)
+// import * as THREE from 'three';
 // import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+// import { ITWindow } from './interfaces';
+// (window as ITWindow).THREE = THREE;
+
+import {
+  RELOAD_APP_FOREVER,
+  RELOAD_APP_TIMEOUT,
+  ENABLE_EVENT_CONSOLE_LOG,
+} from './env-variables';
 
 import './styles/main.scss';
 
-// import './models/gltf/tank2/tank2.bin';
-// import './models/gltf/tank2/tank2.gltf';
-// import './models/gltf/tank2/texture1.png';
-// import './models/gltf/tank2/texture2.png';
-// import './models/gltf/tank2/texture3.png';
-// import './models/gltf/tank2/texture4.png';
+import { IAppModule, IApplicationContainer } from './interfaces';
 
-// import './models/gltf/tank3/tank3-v.1.2.gltf';
-// import './models/gltf/tank3/tank3-v.1.2.bin';
-// import './models/gltf/tank3/target2_1.png';
-
-import { ITWindow, IAppModule, IApplicationContainer } from './interfaces';
-
-import AppEventBus from './app-event-bus';
-import WindowResizeHandler from './window-resize-handler';
-import Application from './application';
-import Controls from './controls';
 import World from './world';
+import Controls from './controls';
 import FirstPersonCamera from './first-person-camera';
+import Application from './application';
+import FrameRate from './frame-rate';
 import KeyboardInput from './keyboard-input';
 import MouseInput from './mouse-input';
-import FrameRate from './frame-rate';
+import WindowResizeHandler from './window-resize-handler';
 import AppEventLogger from './app-event-logger';
-
-(window as ITWindow).THREE = THREE;
-
-const RELOAD_APP_TIMEOUT: number = 3; // seconds
-const RELOAD_APP_FOREVER: boolean = false;
-const ENABLE_EVENT_CONSOLE_LOG: boolean = false;
+import AppEventBus from './app-event-bus';
 
 function noop() {}
 
@@ -92,9 +82,17 @@ function stop(module: IAppModule): void {
   console.log('Done!');
 }
 
-function start(_module: IAppModule | null): IAppModule {
+function start(_module?: IAppModule): IAppModule {
   const module: IAppModule = _module || {};
-  const appContainer: IApplicationContainer = document.getElementById('app-container') as HTMLElement;
+  const appContainer: IApplicationContainer = ((): HTMLElement => {
+    const el = document.getElementById('app-container');
+
+    if (!el) {
+      throw new Error('Please provide element with id `app-container` in index.html file.');
+    }
+
+    return el;
+  })();
 
   module.eventBus = new AppEventBus();
 
@@ -127,16 +125,19 @@ function start(_module: IAppModule | null): IAppModule {
     if (!module.windowResizeHandler) {
       throw new Error('You should have initialized `module.windowResizeHandler` before this line.');
     }
+    if (!module.eventBus) {
+      throw new Error('You should have initialized `module.eventBus` before this line.');
+    }
 
-    module.controls = new Controls(module.eventBus as AppEventBus);
-    module.world = new World(module.eventBus as AppEventBus);
+    module.controls = new Controls(module.eventBus);
+    module.world = new World(module.eventBus);
     module.fpCamera = new FirstPersonCamera(
-      module.eventBus as AppEventBus,
+      module.eventBus,
       {
-        lookSpeed: 50,
-        movementSpeed: 1,
+        lookSpeed: 20,
+        movementSpeed: 0.3,
         camera: {
-          x: 30,
+          x: 50,
           y: -10,
           z: 1,
           fieldOfView: 70,
@@ -146,10 +147,11 @@ function start(_module: IAppModule | null): IAppModule {
     );
 
     // Set up things for the `animate` loop to work properly.
+    // NOTE: We are invoking setter functions, and not modifying private properties.
     module.app.camera = module.fpCamera.camera;
     module.app.scene = module.world.scene;
 
-    // Simulate a window resize event s oas to resize the app accordingly to latest window size.
+    // Simulate a window resize event so as to resize the app accordingly to latest window size.
     // This is to make sure everything is sane, and the app fits completely inside the window from frame 1.
     module.windowResizeHandler.emit();
 
@@ -160,15 +162,16 @@ function start(_module: IAppModule | null): IAppModule {
   return module;
 }
 
-const module = start(null);
+const module = start();
 
-// Useful for testing memory leaks.
-// The way you use it:
-//   1. set `RELOAD_APP_FOREVER` to `true`
-//   2. load application in browser
-//   3. open and observe browser memory profile
-//   4. over 30-60 minutes the application will restart enough times
-//   5. If all is OK, the application memory usage should not grow over time.
+// Useful for testing memory leaks. The way you use it:
+//
+//   1. set `MY_APP_RELOAD_APP_FOREVER` to `true` in `.env` file.
+//   2. Launch `npm run start` so that changes in `.env` file take effect.
+//   3. Load application in the browser.
+//   4. Open and observe browser memory profiler.
+//   5. Over 30-60 minutes the application will restart MANY times.
+//   6. If all is OK, the application memory usage should not grow over time.
 if (RELOAD_APP_FOREVER) {
   window.setInterval(() => {
     stop(module);
