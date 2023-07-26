@@ -1,4 +1,5 @@
-interface IAppEventLoggerOptions {
+export default interface IAppEventLoggerOptions {
+  [key: string]: boolean | undefined;
   animationFrame?: boolean;
   windowResize?: boolean;
   geometryUpdate?: boolean;
@@ -8,8 +9,4 @@ interface IAppEventLoggerOptions {
   mouseUp?: boolean;
   mouseMove?: boolean;
   cameraLook?: boolean;
-}
-
-export {
-  IAppEventLoggerOptions
 };

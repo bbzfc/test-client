@@ -1,6 +1,6 @@
 import { Subscription } from 'rxjs';
 
-import { AppEventBus } from './app-event-bus';
+import AppEventBus from './app-event-bus';
 import {
   AppEventTypeMouseDown,
   AppEventTypeMouseUp,
@@ -9,14 +9,16 @@ import {
   AppEventTypeKeyDown,
   AppEventTypeKeyUp,
 
-  AppEventTypeCameraLook
+  AppEventTypeCameraLook,
 } from './app-events';
 
-class Controls {
+export default class Controls {
   private eventBus: AppEventBus;
-  private eventSubscriptions: Subscription[];
+
+  private eventSubscriptions: Subscription[] = [];
 
   private isInitialized: boolean;
+
   private isDestroyed: boolean;
 
   constructor(eventBus: AppEventBus) {
@@ -39,11 +41,11 @@ class Controls {
   }
 
   private destroyProperties(): void {
-    delete this.eventSubscriptions;
-    this.eventSubscriptions = null;
+    this.eventSubscriptions = [];
+    // this.eventSubscriptions = null;
 
-    delete this.eventBus;
-    this.eventBus = null;
+    // delete this.eventBus;
+    // this.eventBus = null;
   }
 
   private initEventSubscriptions(): void {
@@ -53,7 +55,7 @@ class Controls {
       AppEventTypeKeyDown,
       (event: AppEventTypeKeyUp) => {
         this.handleKeyDownEvent(event.payload.code);
-      }
+      },
     );
     this.eventSubscriptions.push(subscription);
 
@@ -61,7 +63,7 @@ class Controls {
       AppEventTypeKeyUp,
       (event: AppEventTypeKeyUp) => {
         this.handleKeyUpEvent(event.payload.code);
-      }
+      },
     );
     this.eventSubscriptions.push(subscription);
 
@@ -69,7 +71,7 @@ class Controls {
       AppEventTypeMouseDown,
       () => {
         this.handleMouseDownEvent();
-      }
+      },
     );
     this.eventSubscriptions.push(subscription);
 
@@ -77,7 +79,7 @@ class Controls {
       AppEventTypeMouseUp,
       () => {
         this.handleMouseUpEvent();
-      }
+      },
     );
     this.eventSubscriptions.push(subscription);
 
@@ -85,7 +87,7 @@ class Controls {
       AppEventTypeMouseMove,
       (event: AppEventTypeMouseMove) => {
         this.handleMouseMoveEvent(event.payload.mouseX, event.payload.mouseY);
-      }
+      },
     );
     this.eventSubscriptions.push(subscription);
   }
@@ -122,11 +124,7 @@ class Controls {
       subscription.unsubscribe();
 
       delete this.eventSubscriptions[idx];
-      this.eventSubscriptions[idx] = null;
+      // this.eventSubscriptions[idx] = null;
     });
   }
 }
-
-export {
-  Controls
-};

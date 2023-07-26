@@ -8,7 +8,7 @@ import {
 
   MeshBasicMaterial,
   LineBasicMaterial,
-  ShaderMaterial
+  ShaderMaterial,
 } from 'three';
 
 type IWorldObject = Mesh | HemisphereLight | DirectionalLight | SpotLight | Line | Scene;
@@ -16,5 +16,5 @@ type IWorldMaterial = MeshBasicMaterial | LineBasicMaterial | ShaderMaterial;
 
 export {
   IWorldObject,
-  IWorldMaterial
+  IWorldMaterial,
 };

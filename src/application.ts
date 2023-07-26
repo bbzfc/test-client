@@ -1,31 +1,42 @@
-import { Clock, PerspectiveCamera, Scene, WebGLRenderer, PCFSoftShadowMap } from 'three';
+import {
+  Clock, PerspectiveCamera, Scene, WebGLRenderer, PCFSoftShadowMap,
+} from 'three';
 import { Subscription } from 'rxjs';
 
 import { IApplicationOptions, IApplicationContainer } from './interfaces';
 
-import { domReady } from './utils';
-import { AppEventBus } from './app-event-bus';
+import domReady from './utils';
+import AppEventBus from './app-event-bus';
 import {
   AppEventTypeWindowResize,
   AppEventTypeAnimationFrame,
-  AppEventTypeRendererGeometryUpdate
+  AppEventTypeRendererGeometryUpdate,
 } from './app-events';
 
-class Application {
-  private clock: Clock = null;
-  private internalScene: Scene = null;
-  private internalCamera: PerspectiveCamera = null;
-  public renderer: WebGLRenderer = null;
+export default class Application {
+  private clock?: Clock | null = null;
+
+  private internalScene?: Scene | null = null;
+
+  private internalCamera?: PerspectiveCamera | null = null;
+
+  public renderer?: WebGLRenderer | null = null;
 
   private eventBus: AppEventBus;
-  private eventSubscriptions: Subscription[];
-  private rendererReadyP: Promise<void>;
-  private appContainer: IApplicationContainer = null;
 
-  private animationStarted: boolean;
-  private animationPaused: boolean;
-  private isInitialized: boolean;
-  private isDestroyed: boolean;
+  private eventSubscriptions: Array<Subscription | null> | null = null;
+
+  private rendererReadyP: Promise<void>;
+
+  private appContainer: IApplicationContainer | null = null;
+
+  private animationStarted: boolean = false;
+
+  private animationPaused: boolean = false;
+
+  private isInitialized: boolean = false;
+
+  private isDestroyed: boolean = false;
 
   constructor(eventBus: AppEventBus, options?: IApplicationOptions) {
     this.eventBus = eventBus;
@@ -35,32 +46,32 @@ class Application {
     }
 
     this.rendererReadyP = new Promise(
-      (resolve: (value?: void | PromiseLike<void>) => void
-    ): void => {
-      domReady((): void => {
-        this.initAppContainer(options);
-        this.initRenderer(options);
-        this.initEventSubscriptions();
+      (resolve: (value?: void | PromiseLike<void>) => void): void => {
+        domReady((): void => {
+          this.initAppContainer(options as IApplicationOptions);
+          this.initRenderer(options as IApplicationOptions);
+          this.initEventSubscriptions();
 
-        this.updateRendererSize();
+          this.updateRendererSize();
 
-        this.animationStarted = false;
-        this.animationPaused = false;
-        this.isInitialized = true;
-        this.isDestroyed = false;
+          this.animationStarted = false;
+          this.animationPaused = false;
+          this.isInitialized = true;
+          this.isDestroyed = false;
 
-        resolve();
-      });
-    });
+          resolve();
+        });
+      },
+    );
   }
 
   public rendererReady(): Promise<void> {
     return this.rendererReadyP;
   }
 
-  public get canvasEl(): HTMLCanvasElement {
-    return this.renderer.domElement;
-  }
+  // public get canvasEl(): HTMLCanvasElement {
+  //   return this.renderer?.domElement as HTMLCanvasElement;
+  // }
 
   public set camera(newCamera: PerspectiveCamera) {
     this.internalCamera = newCamera;
@@ -74,39 +85,54 @@ class Application {
     if (this.isInitialized !== true || this.isDestroyed === true) {
       return;
     }
-    this.isDestroyed = true;
 
-    this.eventSubscriptions.forEach((subscription: Subscription, idx: number) => {
-      subscription.unsubscribe();
-      delete this.eventSubscriptions[idx];
-      this.eventSubscriptions[idx] = null;
-    });
-    delete this.eventSubscriptions;
-    this.eventSubscriptions = null;
+    if (this.eventSubscriptions) {
+      this.eventSubscriptions.forEach((subscription: Subscription | null, idx: number) => {
+        if (!this.eventSubscriptions || !subscription) {
+          return;
+        }
 
-    delete this.clock;
-    delete this.internalScene;
-    delete this.internalCamera;
+        subscription.unsubscribe();
 
-    this.clock = null;
-    this.internalScene = null;
-    this.internalCamera = null;
+        delete this.eventSubscriptions[idx];
+        this.eventSubscriptions[idx] = null;
+      });
 
-    if (this.appContainer === document) {
-      document.body.removeChild(this.renderer.domElement);
-    } else {
-      this.appContainer.removeChild(this.renderer.domElement);
+      this.eventSubscriptions = null;
     }
 
-    this.renderer.dispose();
-    this.renderer = null;
+    delete this.clock;
+    this.clock = null;
+
+    delete this.internalScene;
+    this.internalScene = null;
+
+    delete this.internalCamera;
+    this.internalCamera = null;
+
+    if (this.renderer) {
+      if (this.renderer.domElement) {
+        if (this.appContainer === document) {
+          document.body.removeChild(this.renderer.domElement);
+        } else if (this.appContainer) {
+          this.appContainer.removeChild(this.renderer.domElement);
+        }
+      }
+
+      this.renderer.dispose();
+
+      delete this.renderer;
+      this.renderer = null;
+    }
+
+    this.isDestroyed = true;
   }
 
   public start(): void {
     if (
-      this.isInitialized !== true ||
-      this.isDestroyed === true ||
-      this.animationStarted === true
+      this.isInitialized !== true
+      || this.isDestroyed === true
+      || this.animationStarted === true
     ) {
       return;
     }
@@ -147,7 +173,7 @@ class Application {
 
     if (this.appContainer === document) {
       document.body.appendChild(this.renderer.domElement);
-    } else {
+    } else if (this.appContainer) {
       this.appContainer.appendChild(this.renderer.domElement);
     }
   }
@@ -159,7 +185,7 @@ class Application {
       AppEventTypeWindowResize,
       () => {
         this.updateRendererSize();
-      }
+      },
     );
     this.eventSubscriptions.push(subscription);
   }
@@ -173,13 +199,15 @@ class Application {
       appHeight = 1;
     }
 
-    this.renderer.setSize(appWidth, appHeight);
+    this.renderer?.setSize(appWidth, appHeight);
 
     this.eventBus.emit(new AppEventTypeRendererGeometryUpdate(
-      { appWidth, appHeight,
+      {
+        appWidth,
+        appHeight,
         offsetLeft: this.appContainerOffsetLeft,
-        offsetTop: this.appContainerOffsetTop
-      }
+        offsetTop: this.appContainerOffsetTop,
+      },
     ));
   }
 
@@ -236,20 +264,17 @@ class Application {
       return;
     }
 
-    this.renderer.render(this.internalScene, this.internalCamera);
+    // debugger;
+    this.renderer?.render(this.internalScene as Scene, this.internalCamera as PerspectiveCamera);
 
     requestAnimationFrame((): void => {
       if (this.isDestroyed === true || this.animationPaused === true) {
         return;
       }
 
-      this.eventBus.emit(new AppEventTypeAnimationFrame({ delta: this.clock.getDelta() }));
+      this.eventBus.emit(new AppEventTypeAnimationFrame({ delta: this.clock?.getDelta() as number }));
 
       this.animate();
     });
   }
 }
-
-export {
-  Application
-};

@@ -1,44 +1,48 @@
 import { Subscription } from 'rxjs';
 
 import { IApplicationContainer } from './interfaces';
-import { AppEventBus } from './app-event-bus';
+import AppEventBus from './app-event-bus';
 import {
   AppEventTypeMouseDown,
   AppEventTypeMouseUp,
   AppEventTypeMouseMove,
-  AppEventTypeRendererGeometryUpdate
+  AppEventTypeRendererGeometryUpdate,
 } from './app-events';
 
 function contextmenu(event: Event): void {
   event.preventDefault();
 }
 
-class MouseInput {
+export default class MouseInput {
   private eventBus: AppEventBus;
-  private eventSubscriptions: Subscription[];
+
+  private eventSubscriptions: Subscription[] = [];
 
   private appContainer: IApplicationContainer;
 
   private onMouseMoveCtx: (evt: MouseEvent) => void;
+
   private onMouseDownCtx: (evt: MouseEvent) => void;
+
   private onMouseUpCtx: (evt: MouseEvent) => void;
 
   private renderElCenterX: number;
+
   private renderElCenterY: number;
 
   private halfAppWidth: number;
+
   private halfAppHeight: number;
 
   private disableContextMenu: boolean;
 
   private isInitialized: boolean;
+
   private isDestroyed: boolean;
 
-  constructor(
-    eventBus: AppEventBus, appContainer?: IApplicationContainer, disableContextMenu?: boolean
-  ) {
+  constructor(eventBus: AppEventBus, appContainer?: IApplicationContainer, disableContextMenu?: boolean) {
     this.eventBus = eventBus;
-    this.disableContextMenu = (disableContextMenu) ? true : false;
+    this.disableContextMenu = !!(disableContextMenu);
 
     if (appContainer) {
       this.appContainer = appContainer;
@@ -54,8 +58,8 @@ class MouseInput {
     this.halfAppHeight = 1;
 
     this.onMouseMoveCtx = this.onMouseMove.bind(this);
-    this.onMouseDownCtx =  this.onMouseDown.bind(this);
-    this.onMouseUpCtx =  this.onMouseUp.bind(this);
+    this.onMouseDownCtx = this.onMouseDown.bind(this);
+    this.onMouseUpCtx = this.onMouseUp.bind(this);
 
     this.addEventListeners();
     this.initEventSubscriptions();
@@ -76,7 +80,7 @@ class MouseInput {
   }
 
   private addEventListeners(): void {
-    let tempEl: IApplicationContainer = null;
+    let tempEl: IApplicationContainer | null = null;
 
     if (this.appContainer === document) {
       tempEl = document.body;
@@ -94,7 +98,7 @@ class MouseInput {
   }
 
   private removeEventListeners(): void {
-    let tempEl: IApplicationContainer = null;
+    let tempEl: IApplicationContainer | null = null;
 
     if (this.appContainer === document) {
       tempEl = document.body;
@@ -112,45 +116,45 @@ class MouseInput {
   }
 
   private destroyProperties(): void {
-    delete this.eventBus;
-    this.eventBus = null;
+    // delete this.eventBus;
+    // this.eventBus = null;
 
-    delete this.eventSubscriptions;
-    this.eventSubscriptions = null;
+    // delete this.eventSubscriptions;
+    // this.eventSubscriptions = null;
 
-    delete this.appContainer;
-    this.appContainer = null;
+    // delete this.appContainer;
+    // this.appContainer = null;
 
-    delete this.onMouseMoveCtx;
-    this.onMouseMoveCtx = null;
+    // delete this.onMouseMoveCtx;
+    // this.onMouseMoveCtx = null;
 
-    delete this.onMouseDownCtx;
-    this.onMouseDownCtx = null;
+    // delete this.onMouseDownCtx;
+    // this.onMouseDownCtx = null;
 
-    delete this.onMouseUpCtx;
-    this.onMouseUpCtx = null;
+    // delete this.onMouseUpCtx;
+    // this.onMouseUpCtx = null;
 
-    delete this.renderElCenterX;
-    this.renderElCenterX = null;
+    // delete this.renderElCenterX;
+    // this.renderElCenterX = null;
 
-    delete this.renderElCenterY;
-    this.renderElCenterY = null;
+    // delete this.renderElCenterY;
+    // this.renderElCenterY = null;
 
-    delete this.halfAppWidth;
-    this.halfAppWidth = null;
+    // delete this.halfAppWidth;
+    // this.halfAppWidth = null;
 
-    delete this.halfAppHeight;
-    this.halfAppHeight = null;
+    // delete this.halfAppHeight;
+    // this.halfAppHeight = null;
 
-    delete this.disableContextMenu;
-    this.disableContextMenu = null;
+    // delete this.disableContextMenu;
+    // this.disableContextMenu = null;
   }
 
   private onMouseDown(event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
 
-    let tempEl: IApplicationContainer = null;
+    let tempEl: IApplicationContainer | null = null;
 
     if (this.appContainer === document) {
       tempEl = document.body;
@@ -178,8 +182,10 @@ class MouseInput {
   }
 
   private handleResize(
-    appWidth: number, appHeight: number,
-    offsetLeft: number, offsetTop: number
+    appWidth: number,
+    appHeight: number,
+    offsetLeft: number,
+    offsetTop: number,
   ): void {
     this.halfAppWidth = appWidth * 0.5;
     this.halfAppHeight = appHeight * 0.5;
@@ -202,10 +208,12 @@ class MouseInput {
       AppEventTypeRendererGeometryUpdate,
       (event: AppEventTypeRendererGeometryUpdate) => {
         this.handleResize(
-          event.payload.appWidth, event.payload.appHeight,
-          event.payload.offsetLeft, event.payload.offsetTop
+          event.payload.appWidth,
+          event.payload.appHeight,
+          event.payload.offsetLeft,
+          event.payload.offsetTop,
         );
-      }
+      },
     );
     this.eventSubscriptions.push(subscription);
   }
@@ -215,11 +223,7 @@ class MouseInput {
       subscription.unsubscribe();
 
       delete this.eventSubscriptions[idx];
-      this.eventSubscriptions[idx] = null;
+      // this.eventSubscriptions[idx] = null;
     });
   }
 }
-
-export {
-  MouseInput
-};

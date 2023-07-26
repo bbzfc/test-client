@@ -1,7 +1,7 @@
 import { Subscription } from 'rxjs';
 
 import { IAppEventLoggerOptions } from './interfaces';
-import { AppEventBus } from './app-event-bus';
+import AppEventBus from './app-event-bus';
 import {
   AppEventTypes,
 
@@ -13,16 +13,18 @@ import {
   AppEventTypeMouseDown,
   AppEventTypeMouseUp,
   AppEventTypeMouseMove,
-  AppEventTypeCameraLook
+  AppEventTypeCameraLook,
 } from './app-events';
 
-class AppEventLogger {
+export default class AppEventLogger {
   private eventBus: AppEventBus;
-  private eventSubscriptions: Subscription[];
 
-  private options: IAppEventLoggerOptions;
+  private eventSubscriptions: Subscription[] = [];
+
+  private options: IAppEventLoggerOptions = {};
 
   private isInitialized: boolean;
+
   private isDestroyed: boolean;
 
   constructor(eventBus: AppEventBus, options?: IAppEventLoggerOptions) {
@@ -59,7 +61,7 @@ class AppEventLogger {
       'mouseDown',
       'mouseUp',
       'mouseMove',
-      'cameraLook'
+      'cameraLook',
     ];
 
     availableOptions.forEach((option: string) => {
@@ -76,26 +78,25 @@ class AppEventLogger {
       subscription.unsubscribe();
 
       delete this.eventSubscriptions[idx];
-      this.eventSubscriptions[idx] = null;
+      // this.eventSubscriptions[idx] = null;
     });
   }
 
   private destroyProperties(): void {
-    delete this.eventBus;
-    this.eventBus = null;
+    // delete this.eventBus;
+    // this.eventBus = null;
 
-    delete this.eventSubscriptions;
-    this.eventSubscriptions = null;
+    // delete this.eventSubscriptions;
+    // this.eventSubscriptions = null;
 
-    delete this.options;
-    this.options = null;
+    // delete this.options;
+    // this.options = null;
   }
 
   private initEventSubscriptions(): void {
     this.eventSubscriptions = [];
 
     const subscription: Subscription = this.eventBus.subscribe((event: AppEventTypes) => {
-
       if (
         this.options.animationFrame && event instanceof AppEventTypeAnimationFrame
       ) {
@@ -158,7 +159,3 @@ class AppEventLogger {
     this.eventSubscriptions.push(subscription);
   }
 }
-
-export {
-  AppEventLogger
-};

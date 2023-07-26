@@ -1,24 +1,24 @@
 import { IApplicationContainer } from './interfaces';
-import { AppEventBus } from './app-event-bus';
+import AppEventBus from './app-event-bus';
 import {
   AppEventTypeKeyDown,
-  AppEventTypeKeyUp
+  AppEventTypeKeyUp,
 } from './app-events';
 
-class KeyboarInput {
+export default class KeyboardInput {
   private eventBus: AppEventBus;
 
   private appContainer: IApplicationContainer;
 
   private onKeyDownCtx: (evt: KeyboardEvent) => void;
+
   private onKeyUpCtx: (evt: KeyboardEvent) => void;
 
   private isInitialized: boolean;
+
   private isDestroyed: boolean;
 
-  constructor(
-    eventBus: AppEventBus, appContainer?: IApplicationContainer, disableTabIndex?: boolean
-  ) {
+  constructor(eventBus: AppEventBus, appContainer?: IApplicationContainer, disableTabIndex?: boolean) {
     this.eventBus = eventBus;
 
     if (appContainer) {
@@ -28,7 +28,7 @@ class KeyboarInput {
     }
 
     this.onKeyDownCtx = this.onKeyDown.bind(this);
-    this.onKeyUpCtx =  this.onKeyUp.bind(this);
+    this.onKeyUpCtx = this.onKeyUp.bind(this);
 
     if (this.appContainer === document) {
       if (disableTabIndex) {
@@ -64,17 +64,17 @@ class KeyboarInput {
       (this.appContainer as HTMLElement).removeEventListener('keyup', this.onKeyUpCtx, false);
     }
 
-    delete this.onKeyDownCtx;
-    this.onKeyDownCtx = null;
+    // delete this.onKeyDownCtx;
+    // this.onKeyDownCtx = null;
 
-    delete this.onKeyUpCtx;
-    this.onKeyUpCtx = null;
+    // delete this.onKeyUpCtx;
+    // this.onKeyUpCtx = null;
 
-    delete this.appContainer;
-    this.appContainer = null;
+    // delete this.appContainer;
+    // this.appContainer = null;
 
-    delete this.eventBus;
-    this.eventBus = null;
+    // delete this.eventBus;
+    // this.eventBus = null;
   }
 
   private onKeyDown(event: KeyboardEvent): void {
@@ -87,7 +87,3 @@ class KeyboarInput {
     this.eventBus.emit(new AppEventTypeKeyUp({ code: event.code }));
   }
 }
-
-export {
-  KeyboarInput
-};
