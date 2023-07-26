@@ -53,6 +53,12 @@ export default class World {
 
   private isDestroyed: boolean;
 
+  private playerOneObjPtr: IWorldObject | null = null;
+
+  private playerTwoObjPtr: IWorldObject | null = null;
+
+  xDirection: (1 | -1) = 1;
+
   constructor(eventBus: AppEventBus) {
     this.eventBus = eventBus;
 
@@ -344,10 +350,16 @@ export default class World {
       `${ASSETS_BASE_URL}/tank2/tank2.gltf`,
       `${ASSETS_BASE_URL}/tank2/texture4.png`,
       new Vector3(20, -5, -3),
+      (_obj: IWorldObject) => {
+        this.playerOneObjPtr = _obj;
+      },
     );
     this.loadModel(
       `${ASSETS_BASE_URL}/tank3/tank3-v.1.2.gltf`,
       new Vector3(15, -30, -3),
+      (_obj: IWorldObject) => {
+        this.playerTwoObjPtr = _obj;
+      },
     );
 
     // ----------------------------------
@@ -361,6 +373,7 @@ export default class World {
     tankModel: string,
     tankTexture: string,
     startingPosition: Vector3,
+    cb: (obj: IWorldObject) => void,
   ): void {
     const loader: GLTFLoader = new GLTFLoader();
 
@@ -415,6 +428,8 @@ export default class World {
           this.textures.push(texture);
           this.objects.push(gltf.scene);
 
+          cb(this.objects[this.objects.length - 1]);
+
           this.internalScene?.add(gltf.scene);
         },
         (progress: ProgressEvent) => {
@@ -436,6 +451,7 @@ export default class World {
   private loadModel(
     tankModel: string,
     startingPosition: Vector3,
+    cb: (obj: IWorldObject) => void,
   ): void {
     const loader: GLTFLoader = new GLTFLoader();
 
@@ -482,6 +498,8 @@ export default class World {
 
       this.objects.push(gltf.scene);
 
+      cb(this.objects[this.objects.length - 1]);
+
       this.internalScene?.add(gltf.scene);
     }, (progress: ProgressEvent) => {
       console.log(`GLTF progress => loaded = ${progress.loaded}, total = ${progress.total}`);
@@ -517,9 +535,48 @@ export default class World {
       this.updateTankAnimation(delta);
     }
 
-    if (this.objects[6]) {
-      this.objects[6].position.y += 2.0 * delta;
+    if (this.playerOneObjPtr) {
+      const tank1: IWorldObject = this.playerOneObjPtr;
+
+      const centerX: number = 0; // Adjust this value to change the center along the x-axis
+      const centerY: number = -15; // Adjust this value to change the center along the y-axis
+
+      // Define the radius of the circular path
+      const radius: number = 15; // Adjust this value to change the radius of the circle
+
+      // Calculate the current angle of the tank in radians
+      let angle: number = Math.atan2(tank1.position.y - centerY, tank1.position.x - centerX);
+
+      // Increment the angle to make the tank move around the circle
+      angle += 1 * (Math.PI / 180);
+
+      // Calculate the new x and y positions based on the updated angle and radius
+      const newX: number = centerX + radius * Math.cos(angle);
+      const newY: number = centerY + radius * Math.sin(angle);
+
+      // Update the tank's position
+      tank1.position.x = newX;
+      tank1.position.y = newY;
+
+      tank1.rotateY(1 * (Math.PI / 180));
     }
+
+    if (this.playerTwoObjPtr) {
+      const tank2: IWorldObject = this.playerTwoObjPtr;
+
+      if (tank2.position.x < -20) {
+        this.xDirection = -1;
+        tank2.rotateY(Math.PI);
+      }
+
+      if (tank2.position.x > 20) {
+        this.xDirection = 1;
+        tank2.rotateY(Math.PI);
+      }
+
+      tank2.position.x -= this.xDirection * 8 * delta;
+    }
+
     // if (this.objects[508]) {
     //   this.objects[508].position.x -= 2.0 * delta;
     // }
