@@ -4,6 +4,7 @@ import {
   SpotLight,
   DirectionalLight,
   Line,
+  Group,
   Scene,
 
   MeshBasicMaterial,
@@ -11,7 +12,7 @@ import {
   ShaderMaterial,
 } from 'three';
 
-type IWorldObject = Mesh | HemisphereLight | DirectionalLight | SpotLight | Line | Scene;
+type IWorldObject = Mesh | HemisphereLight | DirectionalLight | SpotLight | Line | Scene | Group;
 type IWorldMaterial = MeshBasicMaterial | LineBasicMaterial | ShaderMaterial;
 
 export {
