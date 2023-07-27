@@ -10,7 +10,11 @@
       "dom"
     ],
     "baseUrl": "./",
-    "paths": {},
+    "paths": {
+      "ThreeGLTFLoader": [
+        "three/examples/jsm/loaders"
+      ]
+    },
     "plugins": [{ "name": "typescript-plugin-css-modules" }]
   }
 }

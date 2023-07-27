@@ -2,7 +2,7 @@ import Stats from 'stats.js';
 import { Subscription } from 'rxjs';
 
 import AppEventBus from './app-event-bus';
-import { AppEventTypeAnimationFrame } from './app-events';
+import { AppEventTypeAnimationFrame } from './app-event';
 
 export default class FrameRate {
   private eventBus: AppEventBus;

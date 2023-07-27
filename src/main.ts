@@ -3,7 +3,7 @@
 // So we have this hack ;)
 // import * as THREE from 'three';
 // import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-// import { ITWindow } from './interfaces';
+// import { ITWindow } from './types';
 // (window as ITWindow).THREE = THREE;
 
 import {
@@ -14,10 +14,10 @@ import {
 
 import './styles/main.scss';
 
-import { IAppModule, IApplicationContainer } from './interfaces';
+import { IAppModule, IApplicationContainer } from './types';
 
 import World from './world';
-import Controls from './controls';
+import Control from './control';
 import FirstPersonCamera from './first-person-camera';
 import Application from './application';
 import FrameRate from './frame-rate';
@@ -37,7 +37,7 @@ function stop(module: IAppModule): void {
 
   // Call the destructor for each available module instance.
   (module.world) ? module.world.destroy() : noop();
-  (module.controls) ? module.controls.destroy() : noop();
+  (module.control) ? module.control.destroy() : noop();
   (module.fpCamera) ? module.fpCamera.destroy() : noop();
   (module.app) ? module.app.destroy() : noop();
   (module.frameRate) ? module.frameRate.destroy() : noop();
@@ -51,8 +51,8 @@ function stop(module: IAppModule): void {
   delete module.world;
   module.world = undefined;
 
-  delete module.controls;
-  module.controls = undefined;
+  delete module.control;
+  module.control = undefined;
 
   delete module.fpCamera;
   module.fpCamera = undefined;
@@ -129,7 +129,7 @@ function start(_module?: IAppModule): IAppModule {
       throw new Error('You should have initialized `module.eventBus` before this line.');
     }
 
-    module.controls = new Controls(module.eventBus);
+    module.control = new Control(module.eventBus);
     module.world = new World(module.eventBus);
     module.fpCamera = new FirstPersonCamera(
       module.eventBus,
@@ -157,6 +157,12 @@ function start(_module?: IAppModule): IAppModule {
 
     // Start the animation loop.
     module.app.start();
+
+    // Focus on application container DOM element, so that keyboard events get intercepted right away.
+    const appContainerEl = document.getElementById('app-container');
+    if (appContainerEl) {
+      appContainerEl.focus();
+    }
   });
 
   return module;

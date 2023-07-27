@@ -1,13 +1,13 @@
 import { Subject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
-import { AppEventTypes } from './app-events';
+import { AppEventTypes } from './app-event';
 
 type CallbackFunction<T = AppEventTypes> = (event: T) => void;
 type NewableType<T> = new (...args: any[]) => T;
 
 export default class AppEventBus {
-  private eventStream: Subject<any>;
+  private eventStream?: Subject<any> | null = null;
 
   private isInitialized: boolean;
 
@@ -21,6 +21,10 @@ export default class AppEventBus {
   }
 
   public emit(event: AppEventTypes): void {
+    if (!this.eventStream) {
+      throw new Error('can not run func emit() : eventStream is not initialized');
+    }
+
     this.eventStream.next(event);
   }
 
@@ -29,6 +33,10 @@ export default class AppEventBus {
     callback: CallbackFunction<T>,
     callbackContext: any = null,
   ): Subscription {
+    if (!this.eventStream) {
+      throw new Error('can not run func on() : eventStream is not initialized');
+    }
+
     const subscription: Subscription = this.eventStream
       .pipe(
         filter((event: any): boolean => (event instanceof typeFilter)),
@@ -48,6 +56,10 @@ export default class AppEventBus {
     callback: CallbackFunction,
     callbackContext: any = null,
   ): Subscription {
+    if (!this.eventStream) {
+      throw new Error('can not run func subscribe() : eventStream is not initialized');
+    }
+
     const subscription: Subscription = this.eventStream.subscribe(
       (event: any): void => {
         try {
@@ -65,11 +77,14 @@ export default class AppEventBus {
     if (this.isInitialized !== true || this.isDestroyed === true) {
       return;
     }
+
+    if (this.eventStream) {
+      this.eventStream.complete();
+
+      delete this.eventStream;
+      this.eventStream = null;
+    }
+
     this.isDestroyed = true;
-
-    this.eventStream.complete();
-
-    // delete this.eventStream;
-    // this.eventStream = undefined;
   }
 }

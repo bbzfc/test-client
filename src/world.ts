@@ -5,17 +5,13 @@ import {
   AnimationMixer,
   BoxGeometry,
   AnimationAction,
-  SpotLight,
   DoubleSide,
-  HemisphereLight,
   Mesh,
   MeshBasicMaterial,
-  ShaderMaterial,
   BufferAttribute,
   BufferGeometry,
   Scene,
   DirectionalLight,
-  PlaneGeometry,
   Object3D,
   Vector3,
   MeshStandardMaterial,
@@ -27,37 +23,43 @@ import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import { ASSETS_BASE_URL } from './env-variables';
 import AppEventBus from './app-event-bus';
-import { AppEventTypeAnimationFrame } from './app-events';
-import { IWorldObject, IWorldMaterial } from './interfaces';
+import {
+  AppEventTypeAnimationFrame,
+  AppEventTypePlayerStartMovement,
+  AppEventTypePlayerStopMovement,
+} from './app-event';
+import { IWorldObject, IWorldMaterial, MOVEMENT_DIRECTION } from './types';
 
 export default class World {
-  private internalScene: Scene | undefined;
+  private internalScene?: Scene | null = null;
 
-  private eventBus: AppEventBus;
+  private eventBus?: AppEventBus | null = null;
 
-  private eventSubscriptions: Subscription[] = [];
+  private eventSubscriptions?: Array<Subscription | null> | null = null;
 
-  private geometries: Array<BoxGeometry | BufferGeometry> = [];
+  private geometries?: Array<BoxGeometry | BufferGeometry | null> | null = null;
 
-  private materials: IWorldMaterial[] = [];
+  private materials?: Array<IWorldMaterial | null> | null = null;
 
-  private objects: Array<any> = [];
+  private objects?: Array<IWorldObject | null> | null = null;
 
-  private textures: Texture[] = [];
+  private textures?: Array<Texture | null> | null = null;
+
+  private playerOneObjPtr?: IWorldObject | null = null;
+
+  private playerTwoObjPtr?: IWorldObject | null = null;
+
+  private playerMovement: {
+    [key: string]: null | undefined | boolean;
+  } | null = null;
 
   updateTankAnimation: ((delta: number) => void) | null = null;
 
-  private uniforms: { [key: string]: any } = {};
+  // private uniforms: { [key: string]: any } = {};
 
   private isInitialized: boolean;
 
   private isDestroyed: boolean;
-
-  private playerOneObjPtr: IWorldObject | null = null;
-
-  private playerTwoObjPtr: IWorldObject | null = null;
-
-  xDirection: (1 | -1) = 1;
 
   constructor(eventBus: AppEventBus) {
     this.eventBus = eventBus;
@@ -65,75 +67,118 @@ export default class World {
     this.initWorldObjects();
     this.initEventSubscriptions();
 
+    this.playerMovement = {};
+
     this.isInitialized = true;
     this.isDestroyed = false;
   }
 
   public get scene(): Scene {
-    return this.internalScene as Scene;
+    if (!this.internalScene) {
+      throw new Error('can not run getter func scene() : internalScene is not initialized');
+    }
+
+    return this.internalScene;
   }
 
   public destroy(): void {
     if (this.isInitialized !== true || this.isDestroyed === true) {
       return;
     }
-    this.isDestroyed = true;
 
-    this.eventSubscriptions.forEach((subscription: Subscription, idx: number) => {
-      subscription.unsubscribe();
+    if (this.eventSubscriptions) {
+      this.eventSubscriptions.forEach((subscription: Subscription | null, idx: number) => {
+        if (subscription) {
+          subscription.unsubscribe();
+        }
 
-      delete this.eventSubscriptions[idx];
-      // this.eventSubscriptions[idx] = undefined;
-    });
-    this.eventSubscriptions = [];
-    // this.eventSubscriptions = null;
+        if (this.eventSubscriptions) {
+          delete this.eventSubscriptions[idx];
+          this.eventSubscriptions[idx] = null;
+        }
+      });
+    }
+    delete this.eventSubscriptions;
+    this.eventSubscriptions = null;
 
-    // delete this.eventBus;
-    // this.eventBus = null;
+    delete this.eventBus;
+    this.eventBus = null;
 
-    this.objects.forEach((object: IWorldObject, idx: number) => {
-      this.internalScene?.remove(object);
+    if (this.objects) {
+      this.objects.forEach((object: IWorldObject | null, idx: number) => {
+        if (this.internalScene && object) {
+          this.internalScene.remove(object);
+        }
 
-      delete this.objects[idx];
-      // this.objects[idx] = null;
-    });
-    this.objects = [];
-    // this.objects = null;
+        if (this.objects) {
+          delete this.objects[idx];
+          this.objects[idx] = null;
+        }
+      });
+    }
+    delete this.objects;
+    this.objects = null;
 
-    this.geometries.forEach(
-      (geometry: BoxGeometry | BufferGeometry, idx: number) => {
-        geometry.dispose();
+    if (this.geometries) {
+      this.geometries.forEach(
+        (geometry: BoxGeometry | BufferGeometry | null, idx: number) => {
+          if (geometry) {
+            geometry.dispose();
+          }
 
-        delete this.geometries[idx];
-        // this.geometries[idx] = null;
-      },
-    );
-    this.geometries = [];
-    // this.geometries = null;
+          if (this.geometries) {
+            delete this.geometries[idx];
+            this.geometries[idx] = null;
+          }
+        },
+      );
+    }
+    delete this.geometries;
+    this.geometries = null;
 
-    this.textures.forEach((texture: Texture, idx: number) => {
-      texture.dispose();
+    if (this.textures) {
+      this.textures.forEach((texture: Texture | null, idx: number) => {
+        if (texture) {
+          texture.dispose();
+        }
 
-      delete this.textures[idx];
-      // this.textures[idx] = null;
-    });
-    this.textures = [];
-    // this.textures = null;
+        if (this.textures) {
+          delete this.textures[idx];
+          this.textures[idx] = null;
+        }
+      });
+    }
+    delete this.textures;
+    this.textures = null;
 
-    this.materials.forEach((material: IWorldMaterial, idx: number) => {
-      material.dispose();
+    if (this.materials) {
+      this.materials.forEach((material: IWorldMaterial | null, idx: number) => {
+        if (material) {
+          material.dispose();
+        }
 
-      delete this.materials[idx];
-      // this.materials[idx] = null;
-    });
-    this.materials = [];
-    // this.materials = null;
+        if (this.materials) {
+          delete this.materials[idx];
+          this.materials[idx] = null;
+        }
+      });
+    }
+    delete this.materials;
+    this.materials = null;
 
     delete this.internalScene;
-    // this.internalScene = null;
+    this.internalScene = null;
 
-    this.uniforms = [];
+    delete this.playerOneObjPtr;
+    this.playerOneObjPtr = null;
+
+    delete this.playerTwoObjPtr;
+    this.playerTwoObjPtr = null;
+
+    // this.uniforms = [];
     // this.uniforms = null;
+
+    this.isDestroyed = true;
   }
 
   private initWorldObjects(): void {
@@ -150,11 +195,9 @@ export default class World {
 
     let obj: IWorldObject;
 
-    let groundObjPtr: IWorldObject | null = null;
-
-    this.uniforms = {
-      scale: { type: 'f', value: 1.0 },
-    };
+    // this.uniforms = {
+    //   scale: { type: 'f', value: 1.0 },
+    // };
 
     // ----------------------------------
     // Create a lot of random boxes - floating high in the sky.
@@ -203,7 +246,10 @@ export default class World {
     this.materials.push(mat);
     this.objects.push(obj);
 
-    groundObjPtr = this.objects[this.objects.length - 1];
+    if (!this.objects[this.objects.length - 1]) {
+      throw new Error('something went wrong while creating object');
+    }
+    const groundObjPtr = this.objects[this.objects.length - 1] as IWorldObject;
 
     // ----------------------------------
     // Create a sky.
@@ -234,7 +280,7 @@ export default class World {
     obj.position.z = 1;
 
     // Set the ground plane as the light's target.
-    obj.target = groundObjPtr as IWorldObject;
+    obj.target = groundObjPtr;
 
     this.objects.push(obj);
 
@@ -364,8 +410,10 @@ export default class World {
 
     // ----------------------------------
 
-    this.objects.forEach((object: IWorldObject) => {
-      this.internalScene?.add(object);
+    this.objects.forEach((object: IWorldObject | null) => {
+      if (this.internalScene && object) {
+        this.internalScene.add(object);
+      }
     });
   }
 
@@ -384,6 +432,18 @@ export default class World {
       textureLoader.load(
         tankTexture,
         (texture: Texture) => {
+          if (!this.objects) {
+            throw new Error('can not run func textureLoader.load() : objects is not initialized');
+          }
+
+          if (!this.textures) {
+            throw new Error('can not run func textureLoader.load() : textures is not initialized');
+          }
+
+          if (!this.internalScene) {
+            throw new Error('can not run func textureLoader.load() : internalScene is not initialized');
+          }
+
           texture.colorSpace = SRGBColorSpace;
           texture.flipY = false;
           texture.needsUpdate = true;
@@ -428,9 +488,12 @@ export default class World {
           this.textures.push(texture);
           this.objects.push(gltf.scene);
 
-          cb(this.objects[this.objects.length - 1]);
+          if (!this.objects[this.objects.length - 1]) {
+            throw new Error('something went wrong while creating object');
+          }
+          cb(this.objects[this.objects.length - 1] as IWorldObject);
 
-          this.internalScene?.add(gltf.scene);
+          this.internalScene.add(gltf.scene);
         },
         (progress: ProgressEvent) => {
           console.log(
@@ -456,6 +519,14 @@ export default class World {
     const loader: GLTFLoader = new GLTFLoader();
 
     loader.load(tankModel, (gltf) => {
+      if (!this.objects) {
+        throw new Error('can not run func loader.load() : objects is not initialized');
+      }
+
+      if (!this.internalScene) {
+        throw new Error('can not run func loader.load() : internalScene is not initialized');
+      }
+
       let notNeededChildren: Object3D[] = [];
 
       gltf.scene.traverse((child: Mesh | Object3D) => {
@@ -498,9 +569,12 @@ export default class World {
 
       this.objects.push(gltf.scene);
 
-      cb(this.objects[this.objects.length - 1]);
+      if (!this.objects[this.objects.length - 1]) {
+        throw new Error('something went wrong while creating object');
+      }
+      cb(this.objects[this.objects.length - 1] as IWorldObject);
 
-      this.internalScene?.add(gltf.scene);
+      this.internalScene.add(gltf.scene);
     }, (progress: ProgressEvent) => {
       console.log(`GLTF progress => loaded = ${progress.loaded}, total = ${progress.total}`);
     }, (e: ErrorEvent) => {
@@ -509,21 +583,109 @@ export default class World {
   }
 
   private initEventSubscriptions(): void {
+    if (!this.eventBus) {
+      throw new Error('can not run func initEventSubscriptions() : eventBus is not initialized');
+    }
+
+    let subscription: Subscription;
+
     this.eventSubscriptions = [];
 
-    const subscription: Subscription = this.eventBus.on(
+    subscription = this.eventBus.on(
       AppEventTypeAnimationFrame,
       (event: AppEventTypeAnimationFrame) => {
         this.updateWorld(event.payload.delta);
       },
     );
+    this.eventSubscriptions.push(subscription);
 
+    subscription = this.eventBus.on(
+      AppEventTypePlayerStartMovement,
+      (event: AppEventTypePlayerStartMovement) => {
+        if (!this.playerMovement) {
+          throw new Error('can not run func eventBus.on() : playerMovement is not initialized');
+        }
+
+        switch (event.payload.direction) {
+          case MOVEMENT_DIRECTION.forward:
+            if (this.playerMovement[MOVEMENT_DIRECTION.backward]) {
+              this.playerMovement[MOVEMENT_DIRECTION.backward] = null;
+            }
+            this.playerMovement[MOVEMENT_DIRECTION.forward] = true;
+            break;
+          case MOVEMENT_DIRECTION.backward:
+            if (this.playerMovement[MOVEMENT_DIRECTION.forward]) {
+              this.playerMovement[MOVEMENT_DIRECTION.forward] = null;
+            }
+            this.playerMovement[MOVEMENT_DIRECTION.backward] = true;
+            break;
+          case MOVEMENT_DIRECTION.left:
+            if (this.playerMovement[MOVEMENT_DIRECTION.right]) {
+              this.playerMovement[MOVEMENT_DIRECTION.right] = null;
+            }
+            this.playerMovement[MOVEMENT_DIRECTION.left] = true;
+            break;
+          case MOVEMENT_DIRECTION.right:
+            if (this.playerMovement[MOVEMENT_DIRECTION.left]) {
+              this.playerMovement[MOVEMENT_DIRECTION.left] = null;
+            }
+            this.playerMovement[MOVEMENT_DIRECTION.right] = true;
+            break;
+          default:
+            break;
+        }
+      },
+    );
+    this.eventSubscriptions.push(subscription);
+
+    subscription = this.eventBus.on(
+      AppEventTypePlayerStopMovement,
+      (event: AppEventTypePlayerStopMovement) => {
+        if (!this.playerMovement) {
+          throw new Error('can not run func eventBus.on() : playerMovement is not initialized');
+        }
+
+        switch (event.payload.direction) {
+          case MOVEMENT_DIRECTION.forward:
+            this.playerMovement[MOVEMENT_DIRECTION.backward] = null;
+            this.playerMovement[MOVEMENT_DIRECTION.forward] = null;
+            break;
+          case MOVEMENT_DIRECTION.backward:
+            this.playerMovement[MOVEMENT_DIRECTION.backward] = null;
+            this.playerMovement[MOVEMENT_DIRECTION.forward] = null;
+            break;
+          case MOVEMENT_DIRECTION.left:
+            this.playerMovement[MOVEMENT_DIRECTION.left] = null;
+            this.playerMovement[MOVEMENT_DIRECTION.right] = null;
+            break;
+          case MOVEMENT_DIRECTION.right:
+            this.playerMovement[MOVEMENT_DIRECTION.left] = null;
+            this.playerMovement[MOVEMENT_DIRECTION.right] = null;
+            break;
+          default:
+            break;
+        }
+      },
+    );
     this.eventSubscriptions.push(subscription);
   }
 
   private updateWorld(delta: number): void {
+    if (!this.objects) {
+      throw new Error('can not run func updateWorld() : objects is not initialized');
+    }
+
+    if (!this.playerMovement) {
+      throw new Error('can not run func eventBus.on() : playerMovement is not initialized');
+    }
+
     for (let i: number = 0; i <= 500; i += 1) {
-      this.objects[i].position.y += 0.5 * delta;
+      if (!this.objects[i]) {
+        return;
+      }
+      const obj: IWorldObject = this.objects[i] as IWorldObject;
+
+      obj.position.y += 0.5 * delta;
     }
 
     // this.uniforms.scale.value += 0.6 * delta;
@@ -564,31 +726,32 @@ export default class World {
     if (this.playerTwoObjPtr) {
       const tank2: IWorldObject = this.playerTwoObjPtr;
 
-      if (tank2.position.x < -20) {
-        this.xDirection = -1;
-        tank2.rotateY(Math.PI);
+      if (this.playerMovement[MOVEMENT_DIRECTION.forward]) {
+        tank2.position.x -= 8 * delta;
+      } else if (this.playerMovement[MOVEMENT_DIRECTION.backward]) {
+        tank2.position.x += 8 * delta;
       }
 
-      if (tank2.position.x > 20) {
-        this.xDirection = 1;
-        tank2.rotateY(Math.PI);
+      if (this.playerMovement[MOVEMENT_DIRECTION.left]) {
+        tank2.position.y -= 8 * delta;
+      } else if (this.playerMovement[MOVEMENT_DIRECTION.right]) {
+        tank2.position.y += 8 * delta;
       }
-
-      tank2.position.x -= this.xDirection * 8 * delta;
     }
-
-    // if (this.objects[508]) {
-    //   this.objects[508].position.x -= 2.0 * delta;
-    // }
   }
 
-  private stressTest(): void {
-    const M: number = 0.5 * 1000 * 1000;
-    const N: number = Math.floor(Math.random() * M);
-    const a: number[] = Array.from(Array(N).keys())
-      .map((i: number) => Math.random() * i * (1 / N));
-    const b: number = a.reduce((p: number, n: number) => p + n);
+  // private stressTest(): void {
+  //   for (let j = 0; j <= 3; j += 1) {
+  //     const lower = Math.random() * 1000;
+  //     const upper = lower + Math.random() * 1000;
 
-    console.log(b);
-  }
+  //     const M: number = 0.5 * lower * upper;
+  //     const N: number = Math.floor(Math.random() * M);
+  //     const a: number[] = Array.from(Array(N).keys())
+  //       .map((i: number) => Math.random() * i * (1 / N));
+  //     const b: number = a.reduce((p: number, n: number) => p + n);
+
+  //     console.log(b);
+  //   }
+  // }
 }

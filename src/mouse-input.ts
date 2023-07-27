@@ -1,13 +1,13 @@
 import { Subscription } from 'rxjs';
 
-import { IApplicationContainer } from './interfaces';
+import { IApplicationContainer } from './types';
 import AppEventBus from './app-event-bus';
 import {
   AppEventTypeMouseDown,
   AppEventTypeMouseUp,
   AppEventTypeMouseMove,
   AppEventTypeRendererGeometryUpdate,
-} from './app-events';
+} from './app-event';
 
 function contextmenu(event: Event): void {
   event.preventDefault();

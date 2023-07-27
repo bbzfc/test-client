@@ -11,8 +11,8 @@ import {
   AppEventTypeRendererGeometryUpdate,
   AppEventTypeAnimationFrame,
   AppEventTypeCameraLook,
-} from './app-events';
-import { IFirstPersonCameraOptions, IApplicationOptionsCamera } from './interfaces';
+} from './app-event';
+import { IFirstPersonCameraOptions, IApplicationOptionsCamera } from './types';
 
 export default class FirstPersonCamera {
   private enabled: boolean;

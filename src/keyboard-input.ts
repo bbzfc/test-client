@@ -1,9 +1,9 @@
-import { IApplicationContainer } from './interfaces';
+import { IApplicationContainer } from './types';
 import AppEventBus from './app-event-bus';
 import {
   AppEventTypeKeyDown,
   AppEventTypeKeyUp,
-} from './app-events';
+} from './app-event';
 
 export default class KeyboardInput {
   private eventBus: AppEventBus;

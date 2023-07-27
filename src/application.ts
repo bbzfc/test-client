@@ -3,7 +3,7 @@ import {
 } from 'three';
 import { Subscription } from 'rxjs';
 
-import { IApplicationOptions, IApplicationContainer } from './interfaces';
+import { IApplicationOptions, IApplicationContainer } from './types';
 
 import domReady from './utils';
 import AppEventBus from './app-event-bus';
@@ -11,7 +11,7 @@ import {
   AppEventTypeWindowResize,
   AppEventTypeAnimationFrame,
   AppEventTypeRendererGeometryUpdate,
-} from './app-events';
+} from './app-event';
 
 export default class Application {
   private clock?: Clock | null = null;
@@ -22,13 +22,13 @@ export default class Application {
 
   public renderer?: WebGLRenderer | null = null;
 
-  private eventBus: AppEventBus;
+  private eventBus?: AppEventBus | null = null;
 
-  private eventSubscriptions: Array<Subscription | null> | null = null;
+  private eventSubscriptions?: Array<Subscription | null> | null = null;
 
-  private rendererReadyP: Promise<void>;
+  private rendererReadyP?: Promise<void> | null = null;
 
-  private appContainer: IApplicationContainer | null = null;
+  private appContainer?: IApplicationContainer | null = null;
 
   private animationStarted: boolean = false;
 
@@ -38,18 +38,16 @@ export default class Application {
 
   private isDestroyed: boolean = false;
 
-  constructor(eventBus: AppEventBus, options?: IApplicationOptions) {
+  constructor(eventBus: AppEventBus, customOptions?: IApplicationOptions) {
     this.eventBus = eventBus;
 
-    if (!options) {
-      options = {};
-    }
+    const options: IApplicationOptions = customOptions || {};
 
     this.rendererReadyP = new Promise(
-      (resolve: (value?: void | PromiseLike<void>) => void): void => {
+      (resolve: (value?: void | PromiseLike<void> | undefined) => void): void => {
         domReady((): void => {
-          this.initAppContainer(options as IApplicationOptions);
-          this.initRenderer(options as IApplicationOptions);
+          this.initAppContainer(options);
+          this.initRenderer(options);
           this.initEventSubscriptions();
 
           this.updateRendererSize();
@@ -66,12 +64,12 @@ export default class Application {
   }
 
   public rendererReady(): Promise<void> {
+    if (!this.rendererReadyP) {
+      throw new Error('can not run func rendererReady() : rendererReadyP is not initialized');
+    }
+
     return this.rendererReadyP;
   }
-
-  // public get canvasEl(): HTMLCanvasElement {
-  //   return this.renderer?.domElement as HTMLCanvasElement;
-  // }
 
   public set camera(newCamera: PerspectiveCamera) {
     this.internalCamera = newCamera;
@@ -88,18 +86,18 @@ export default class Application {
 
     if (this.eventSubscriptions) {
       this.eventSubscriptions.forEach((subscription: Subscription | null, idx: number) => {
-        if (!this.eventSubscriptions || !subscription) {
-          return;
+        if (subscription) {
+          subscription.unsubscribe();
         }
 
-        subscription.unsubscribe();
-
-        delete this.eventSubscriptions[idx];
-        this.eventSubscriptions[idx] = null;
+        if (this.eventSubscriptions) {
+          delete this.eventSubscriptions[idx];
+          this.eventSubscriptions[idx] = null;
+        }
       });
-
-      this.eventSubscriptions = null;
     }
+    delete this.eventSubscriptions;
+    this.eventSubscriptions = null;
 
     delete this.clock;
     this.clock = null;
@@ -112,32 +110,37 @@ export default class Application {
 
     if (this.renderer) {
       if (this.renderer.domElement) {
-        if (this.appContainer === document) {
-          document.body.removeChild(this.renderer.domElement);
+        if (this.appContainer === window.document) {
+          window.document.body.removeChild(this.renderer.domElement);
         } else if (this.appContainer) {
           this.appContainer.removeChild(this.renderer.domElement);
         }
       }
 
       this.renderer.dispose();
-
-      delete this.renderer;
-      this.renderer = null;
     }
+    delete this.renderer;
+    this.renderer = null;
+
+    delete this.eventBus;
+    this.eventBus = null;
+
+    delete this.rendererReadyP;
+    this.rendererReadyP = null;
+
+    delete this.appContainer;
+    this.appContainer = null;
 
     this.isDestroyed = true;
   }
 
   public start(): void {
-    if (
-      this.isInitialized !== true
-      || this.isDestroyed === true
-      || this.animationStarted === true
-    ) {
+    if (this.isInitialized !== true || this.isDestroyed === true || this.animationStarted === true) {
       return;
     }
 
     this.animationStarted = true;
+    this.animationPaused = false;
 
     this.animate();
   }
@@ -154,7 +157,7 @@ export default class Application {
     if (options.appContainer) {
       this.appContainer = options.appContainer;
     } else {
-      this.appContainer = document;
+      this.appContainer = window.document;
     }
   }
 
@@ -171,14 +174,18 @@ export default class Application {
       this.renderer.domElement.className = options.threeJsRendererCanvasClass;
     }
 
-    if (this.appContainer === document) {
-      document.body.appendChild(this.renderer.domElement);
+    if (this.appContainer === window.document) {
+      window.document.body.appendChild(this.renderer.domElement);
     } else if (this.appContainer) {
       this.appContainer.appendChild(this.renderer.domElement);
     }
   }
 
   private initEventSubscriptions(): void {
+    if (!this.eventBus) {
+      throw new Error('can not run func initEventSubscriptions() : eventBus is not initialized');
+    }
+
     this.eventSubscriptions = [];
 
     const subscription: Subscription = this.eventBus.on(
@@ -191,6 +198,14 @@ export default class Application {
   }
 
   private updateRendererSize(): void {
+    if (!this.eventBus) {
+      throw new Error('can not run func updateRendererSize() : eventBus is not initialized');
+    }
+
+    if (!this.renderer) {
+      throw new Error('can not run func updateRendererSize() : renderer is not initialized');
+    }
+
     let appWidth: number = this.appContainerWidth;
     let appHeight: number = this.appContainerHeight;
 
@@ -199,7 +214,7 @@ export default class Application {
       appHeight = 1;
     }
 
-    this.renderer?.setSize(appWidth, appHeight);
+    this.renderer.setSize(appWidth, appHeight);
 
     this.eventBus.emit(new AppEventTypeRendererGeometryUpdate(
       {
@@ -213,10 +228,10 @@ export default class Application {
 
   private get appContainerHeight(): number {
     if (!this.appContainer) {
-      return 0;
+      throw new Error('can not run func appContainerHeight() : appContainer is not initialized');
     }
 
-    if (this.appContainer === document) {
+    if (this.appContainer === window.document) {
       return window.innerHeight;
     }
 
@@ -225,10 +240,10 @@ export default class Application {
 
   private get appContainerWidth(): number {
     if (!this.appContainer) {
-      return 0;
+      throw new Error('can not run func appContainerWidth() : appContainer is not initialized');
     }
 
-    if (this.appContainer === document) {
+    if (this.appContainer === window.document) {
       return window.innerWidth;
     }
 
@@ -237,10 +252,10 @@ export default class Application {
 
   private get appContainerOffsetLeft(): number {
     if (!this.appContainer) {
-      return 0;
+      throw new Error('can not run func appContainerOffsetLeft() : appContainer is not initialized');
     }
 
-    if (this.appContainer === document) {
+    if (this.appContainer === window.document) {
       return 0;
     }
 
@@ -249,10 +264,10 @@ export default class Application {
 
   private get appContainerOffsetTop(): number {
     if (!this.appContainer) {
-      return 0;
+      throw new Error('can not run func appContainerOffsetTop() : appContainer is not initialized');
     }
 
-    if (this.appContainer === document) {
+    if (this.appContainer === window.document) {
       return 0;
     }
 
@@ -260,19 +275,38 @@ export default class Application {
   }
 
   private animate(): void {
-    if (this.isDestroyed === true || this.animationPaused === true) {
+    if (this.isInitialized === false || this.isDestroyed === true || this.animationPaused === true) {
       return;
     }
 
-    // debugger;
-    this.renderer?.render(this.internalScene as Scene, this.internalCamera as PerspectiveCamera);
+    if (!this.renderer) {
+      throw new Error('can not run func animate() : renderer is not initialized');
+    }
+
+    if (!this.internalScene) {
+      throw new Error('can not run func animate() : internalScene is not initialized');
+    }
+
+    if (!this.internalCamera) {
+      throw new Error('can not run func animate() : internalCamera is not initialized');
+    }
+
+    this.renderer.render(this.internalScene, this.internalCamera);
 
     requestAnimationFrame((): void => {
-      if (this.isDestroyed === true || this.animationPaused === true) {
+      if (this.isInitialized === false || this.isDestroyed === true || this.animationPaused === true) {
         return;
       }
 
-      this.eventBus.emit(new AppEventTypeAnimationFrame({ delta: this.clock?.getDelta() as number }));
+      if (!this.eventBus) {
+        throw new Error('can not run func animate() : eventBus is not initialized');
+      }
+
+      if (!this.clock) {
+        throw new Error('can not run func animate() : clock is not initialized');
+      }
+
+      this.eventBus.emit(new AppEventTypeAnimationFrame({ delta: this.clock.getDelta() }));
 
       this.animate();
     });
